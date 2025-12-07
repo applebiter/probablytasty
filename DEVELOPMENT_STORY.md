@@ -1,5 +1,5 @@
 # The ProbablyTasty Development Story
-## How a House Painter Built a Sophisticated Recipe App with AI
+## Building a Sophisticated Recipe App with AI Assistance
 
 *A case study in AI-assisted software development - December 2025*
 
@@ -7,7 +7,7 @@
 
 ## The Beginning: A Simple Idea
 
-This project started with a straightforward concept from someone with no professional programming background. Here's the **complete original query** that kicked everything off:
+This project started with a straightforward concept. While I have some programming experience from past projects, I wanted to see what modern AI could do with a simple idea. Here's the **complete original query** that kicked everything off:
 
 > *"I have a new hybrid app idea, and seek your guidance on the best way to architect this from the top down. Let's avoid generating any specific code, but by all means recommend libraries, frameworks and patterns as you see fit. It's a recipe app for Windows that uses Open AI and/or Ollama for natural language search in a local database. The local database needs to have tables and columns allowing the user to describe a recipe, and convert ingredient units transparently in either direction from Imperial to metric units. There needs to by a PySide6 interface that can be used without any STT or TTS, but I want the option to talk to the LLM, if a person has hardware strong enough to support it, and remote, third-party providers if their machine is not that strong but they have a web connection."*
 
@@ -128,20 +128,21 @@ Traditional development of this application would require:
 
 **AI-Assisted Time**: ~30 minutes
 
-### 3. **Expertise is Democratized**
+### 3. **Development is Accelerated**
 
-The human in this story:
-- ❌ Is not a professional programmer
-- ❌ Didn't write the architecture
-- ❌ Didn't write the implementation code
-- ❌ Didn't design the database schema
-- ❌ Didn't choose the design patterns
+What the human contributed:
+- ✅ The initial vision and requirements
+- ✅ Review and approval of architecture
+- ✅ Oversight of implementation
+- ✅ Testing and validation
 
-Yet they now have:
-- ✅ A fully functional desktop application
-- ✅ Production-quality code they can study and learn from
-- ✅ A system they can extend and modify
-- ✅ Documentation explaining how it all works
+What the AI contributed:
+- ✅ Complete architectural design
+- ✅ Full implementation (2,500+ lines)
+- ✅ Database schema and design patterns
+- ✅ Comprehensive documentation
+
+The result: A collaboration that leverages the strengths of both - human judgment and creativity combined with AI's speed and breadth of knowledge.
 
 ### 4. **The Collaboration Model**
 
@@ -171,21 +172,21 @@ The AI provides:
 
 ---
 
-## Lessons for Other "Midwits"
+## Lessons for AI-Assisted Development
 
-### You Don't Need To:
-- ❌ Have a CS degree
-- ❌ Know design patterns
-- ❌ Understand ORMs
-- ❌ Be familiar with every library
-- ❌ Write code from scratch
+### What AI Excels At:
+- ✅ Rapid architectural design
+- ✅ Applying design patterns consistently
+- ✅ Implementing boilerplate and structure
+- ✅ Following best practices
+- ✅ Writing comprehensive documentation
 
-### You DO Need To:
-- ✅ Have a clear idea of what you want
-- ✅ Be able to explain it (even roughly)
-- ✅ Review and test the results
-- ✅ Ask follow-up questions
-- ✅ Iterate on the solution
+### What Humans Bring:
+- ✅ Clear vision of what needs to exist
+- ✅ Domain knowledge and use cases
+- ✅ Judgment on design decisions
+- ✅ Testing and validation
+- ✅ Iterative refinement
 
 ### Practical Tips:
 
