@@ -5,6 +5,9 @@
 *.key
 *.pem
 
+# Media files (generated images, icons, logos)
+media/
+
 # Python
 __pycache__/
 *.py[cod]
