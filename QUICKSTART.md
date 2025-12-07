@@ -3,9 +3,28 @@
 ## Installation
 
 1. **Create and activate virtual environment:**
+   
+   **Linux/Mac:**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Linux/Mac
+   source venv/bin/activate
+   ```
+   
+   **Windows (Command Prompt):**
+   ```cmd
+   python -m venv venv
+   venv\Scripts\activate.bat
+   ```
+   
+   **Windows (PowerShell):**
+   ```powershell
+   python -m venv venv
+   venv\Scripts\Activate.ps1
+   ```
+   
+   *If you get a PowerShell execution policy error:*
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
 
 2. **Install dependencies:**
@@ -123,6 +142,15 @@ You can extend the app with:
 - Meal planning calendar
 
 ## Troubleshooting
+
+### Windows: "python is not recognized"
+Make sure Python is installed and added to PATH. Download from [python.org](https://www.python.org/downloads/).
+During installation, check "Add Python to PATH".
+
+### Windows: PowerShell execution policy error
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
 ### "No module named 'PySide6'"
 ```bash

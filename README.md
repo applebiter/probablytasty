@@ -11,6 +11,7 @@ An intelligent recipe management application with AI-powered search, natural lan
 - 🤖 Multiple LLM provider support (OpenAI, Anthropic, Google)
 - 📥 Import/export recipes in multiple formats
 - 🎨 Modern PySide6 desktop interface
+- 💻 **Cross-platform**: Works on Windows, macOS, and Linux
 
 ## Setup
 
@@ -21,11 +22,28 @@ An intelligent recipe management application with AI-powered search, natural lan
    ```
 
 2. **Create a virtual environment**
+   
+   **Linux/Mac:**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Linux/Mac
-   # or
-   venv\Scripts\activate  # On Windows
+   source venv/bin/activate
+   ```
+   
+   **Windows (Command Prompt):**
+   ```cmd
+   python -m venv venv
+   venv\Scripts\activate.bat
+   ```
+   
+   **Windows (PowerShell):**
+   ```powershell
+   python -m venv venv
+   venv\Scripts\Activate.ps1
+   ```
+   
+   *Note: If PowerShell gives an execution policy error, run:*
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
 
 3. **Install dependencies**
