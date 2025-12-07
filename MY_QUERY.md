@@ -1,0 +1,5 @@
+# My Query
+
+**This is what I said to a frontier LLM about my idea for a desktop application:**
+
+I have a new hybrid app idea, and seek your guidance on the best way to architect this from the top down. Let’s avoid generating any specific code, but by all means recommend libraries, frameworks and patterns as you see fit. It’s a recipe app for Windows that uses Open AI and/or Ollama for natural language search in a local database. The local database needs to have tables and columns allowing the user to describe a recipe, and convert ingredient units transparently in either direction from Imperial to metric units. There needs to by a PySide6 interface that can be used without any STT or TTS, but I want the option to talk to the LLM, if a person has hardware strong enough to support it, and remote, third-party providers if their machine is not that strong but they have a web connection.

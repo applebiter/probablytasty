@@ -1,0 +1,53 @@
+{
+  "recipes": [
+    {
+      "title": "Quick Chicken Stir-Fry",
+      "description": "A fast and healthy chicken stir-fry with vegetables",
+      "instructions": "1. Cut chicken into bite-sized pieces and season with salt and pepper.\n2. Heat oil in a large wok or skillet over high heat.\n3. Cook chicken until golden, about 5-6 minutes. Remove and set aside.\n4. Add vegetables to the wok and stir-fry for 3-4 minutes.\n5. Return chicken to wok, add soy sauce and ginger.\n6. Stir everything together for 2 minutes.\n7. Serve hot over rice.",
+      "servings": 4,
+      "prep_time_minutes": 15,
+      "cook_time_minutes": 15,
+      "total_time_minutes": 30,
+      "source_url": null,
+      "ingredients": [
+        {
+          "name": "chicken breast",
+          "quantity": 500,
+          "unit": "g",
+          "preparation": "diced"
+        },
+        {
+          "name": "bell peppers",
+          "quantity": 2,
+          "unit": "count",
+          "preparation": "sliced"
+        },
+        {
+          "name": "broccoli",
+          "quantity": 200,
+          "unit": "g",
+          "preparation": "florets"
+        },
+        {
+          "name": "soy sauce",
+          "quantity": 3,
+          "unit": "tbsp",
+          "preparation": null
+        },
+        {
+          "name": "fresh ginger",
+          "quantity": 1,
+          "unit": "tbsp",
+          "preparation": "minced"
+        },
+        {
+          "name": "vegetable oil",
+          "quantity": 2,
+          "unit": "tbsp",
+          "preparation": null
+        }
+      ],
+      "tags": ["quick", "healthy", "chicken", "asian"]
+    }
+  ]
+}
