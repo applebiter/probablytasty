@@ -12,6 +12,7 @@ class LLMProvider(Enum):
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     GOOGLE = "google"
+    OLLAMA = "ollama"
     NONE = "none"
 
 
@@ -194,6 +195,73 @@ class GoogleClient(LLMClient):
         return self._client is not None
 
 
+class OllamaClient(LLMClient):
+    """Ollama local LLM client."""
+    
+    def __init__(self, base_url: str = "http://localhost:11434", model: str = "llama2", context_length: int = 8192):
+        self.base_url = base_url.rstrip('/')
+        self.model = model
+        self.context_length = context_length
+        self._available = self._check_connection()
+    
+    def _check_connection(self) -> bool:
+        """Check if Ollama server is available."""
+        try:
+            import requests
+            response = requests.get(f"{self.base_url}/api/tags", timeout=2)
+            return response.status_code == 200
+        except Exception:
+            return False
+    
+    def chat(
+        self,
+        messages: List[Dict[str, str]],
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 1000,
+    ) -> str:
+        import requests
+        
+        # Build prompt from messages
+        prompt = ""
+        if system_prompt:
+            prompt += f"System: {system_prompt}\n\n"
+        
+        for msg in messages:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            if role == "user":
+                prompt += f"User: {content}\n"
+            elif role == "assistant":
+                prompt += f"Assistant: {content}\n"
+        
+        prompt += "Assistant: "
+        
+        # Call Ollama API
+        response = requests.post(
+            f"{self.base_url}/api/generate",
+            json={
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False,
+                "keep_alive": "10m",  # Keep model loaded for 10 minutes
+                "options": {
+                    "temperature": temperature,
+                    "num_predict": max_tokens,
+                    "num_ctx": self.context_length,
+                }
+            },
+            timeout=120  # Increased timeout for first load
+        )
+        response.raise_for_status()
+        
+        result = response.json()
+        return result.get("response", "")
+    
+    def is_available(self) -> bool:
+        return self._available
+
+
 class LLMRouter:
     """Router for selecting and using LLM providers."""
     
@@ -203,12 +271,20 @@ class LLMRouter:
         openai_key: Optional[str] = None,
         anthropic_key: Optional[str] = None,
         google_key: Optional[str] = None,
+        ollama_url: Optional[str] = None,
+        ollama_model: Optional[str] = None,
+        ollama_context_length: int = 8192,
     ):
         self.preferred_provider = preferred_provider
         self.clients: Dict[LLMProvider, Optional[LLMClient]] = {
             LLMProvider.OPENAI: OpenAIClient(openai_key) if openai_key else None,
             LLMProvider.ANTHROPIC: AnthropicClient(anthropic_key) if anthropic_key else None,
             LLMProvider.GOOGLE: GoogleClient(google_key) if google_key else None,
+            LLMProvider.OLLAMA: OllamaClient(
+                base_url=ollama_url or "http://localhost:11434",
+                model=ollama_model or "llama2",
+                context_length=ollama_context_length
+            ) if ollama_url or ollama_model else OllamaClient(context_length=ollama_context_length),
             LLMProvider.NONE: None,
         }
     
@@ -218,11 +294,13 @@ class LLMRouter:
         if self.preferred_provider != LLMProvider.NONE:
             client = self.clients.get(self.preferred_provider)
             if client and client.is_available():
+                print(f"Using LLM provider: {self.preferred_provider.value}")
                 return client
         
         # Fall back to any available provider
         for provider, client in self.clients.items():
             if provider != LLMProvider.NONE and client and client.is_available():
+                print(f"Falling back to LLM provider: {provider.value}")
                 return client
         
         return None

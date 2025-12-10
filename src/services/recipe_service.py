@@ -126,9 +126,9 @@ class RecipeService:
         self,
         recipe_id: int,
         ingredient_name: str,
-        quantity: float,
+        quantity,  # Can be float or string (for ranges like "4-6")
         unit: str,
-        display_quantity: Optional[float] = None,
+        display_quantity=None,  # Can be float or string
         display_unit: Optional[str] = None,
         preparation: Optional[str] = None,
         order_index: int = 0,
@@ -149,12 +149,16 @@ class RecipeService:
             self.session.flush()
         
         # Create recipe ingredient
+        # Convert quantity to string if it's a number
+        qty_str = str(quantity) if not isinstance(quantity, str) else quantity
+        display_qty_str = str(display_quantity) if display_quantity and not isinstance(display_quantity, str) else (display_quantity or qty_str)
+        
         recipe_ingredient = RecipeIngredient(
             recipe_id=recipe_id,
             ingredient_id=ingredient.id,
-            quantity=quantity,
+            quantity=qty_str,
             unit=unit,
-            display_quantity=display_quantity or quantity,
+            display_quantity=display_qty_str,
             display_unit=display_unit or unit,
             preparation=preparation,
             order_index=order_index,

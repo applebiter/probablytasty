@@ -20,25 +20,61 @@ class UnitDefinition:
 UNITS: Dict[str, UnitDefinition] = {
     # Mass units (base: grams)
     "g": UnitDefinition("gram", "g", "mass", "metric", 1.0),
+    "gram": UnitDefinition("gram", "g", "mass", "metric", 1.0),
+    "grams": UnitDefinition("gram", "g", "mass", "metric", 1.0),
     "kg": UnitDefinition("kilogram", "kg", "mass", "metric", 1000.0),
+    "kilogram": UnitDefinition("kilogram", "kg", "mass", "metric", 1000.0),
+    "kilograms": UnitDefinition("kilogram", "kg", "mass", "metric", 1000.0),
     "mg": UnitDefinition("milligram", "mg", "mass", "metric", 0.001),
+    "milligram": UnitDefinition("milligram", "mg", "mass", "metric", 0.001),
+    "milligrams": UnitDefinition("milligram", "mg", "mass", "metric", 0.001),
     "oz": UnitDefinition("ounce", "oz", "mass", "imperial", 28.3495),
+    "ounce": UnitDefinition("ounce", "oz", "mass", "imperial", 28.3495),
+    "ounces": UnitDefinition("ounce", "oz", "mass", "imperial", 28.3495),
     "lb": UnitDefinition("pound", "lb", "mass", "imperial", 453.592),
+    "lbs": UnitDefinition("pound", "lb", "mass", "imperial", 453.592),
+    "pound": UnitDefinition("pound", "lb", "mass", "imperial", 453.592),
+    "pounds": UnitDefinition("pound", "lb", "mass", "imperial", 453.592),
     
     # Volume units (base: milliliters)
     "ml": UnitDefinition("milliliter", "ml", "volume", "metric", 1.0),
+    "milliliter": UnitDefinition("milliliter", "ml", "volume", "metric", 1.0),
+    "milliliters": UnitDefinition("milliliter", "ml", "volume", "metric", 1.0),
     "l": UnitDefinition("liter", "l", "volume", "metric", 1000.0),
+    "liter": UnitDefinition("liter", "l", "volume", "metric", 1000.0),
+    "liters": UnitDefinition("liter", "l", "volume", "metric", 1000.0),
     "tsp": UnitDefinition("teaspoon", "tsp", "volume", "us_customary", 4.92892),
+    "teaspoon": UnitDefinition("teaspoon", "tsp", "volume", "us_customary", 4.92892),
+    "teaspoons": UnitDefinition("teaspoon", "tsp", "volume", "us_customary", 4.92892),
     "tbsp": UnitDefinition("tablespoon", "tbsp", "volume", "us_customary", 14.7868),
+    "tablespoon": UnitDefinition("tablespoon", "tbsp", "volume", "us_customary", 14.7868),
+    "tablespoons": UnitDefinition("tablespoon", "tbsp", "volume", "us_customary", 14.7868),
     "cup": UnitDefinition("cup", "cup", "volume", "us_customary", 236.588),
+    "cups": UnitDefinition("cup", "cup", "volume", "us_customary", 236.588),
     "fl oz": UnitDefinition("fluid ounce", "fl oz", "volume", "us_customary", 29.5735),
+    "fluid ounce": UnitDefinition("fluid ounce", "fl oz", "volume", "us_customary", 29.5735),
+    "fluid ounces": UnitDefinition("fluid ounce", "fl oz", "volume", "us_customary", 29.5735),
     "pt": UnitDefinition("pint", "pt", "volume", "us_customary", 473.176),
+    "pint": UnitDefinition("pint", "pt", "volume", "us_customary", 473.176),
+    "pints": UnitDefinition("pint", "pt", "volume", "us_customary", 473.176),
     "qt": UnitDefinition("quart", "qt", "volume", "us_customary", 946.353),
+    "quart": UnitDefinition("quart", "qt", "volume", "us_customary", 946.353),
+    "quarts": UnitDefinition("quart", "qt", "volume", "us_customary", 946.353),
     "gal": UnitDefinition("gallon", "gal", "volume", "us_customary", 3785.41),
+    "gallon": UnitDefinition("gallon", "gal", "volume", "us_customary", 3785.41),
+    "gallons": UnitDefinition("gallon", "gal", "volume", "us_customary", 3785.41),
+    "drop": UnitDefinition("drop", "drop", "volume", "us_customary", 0.05),  # ~0.05 ml per drop
+    "drops": UnitDefinition("drop", "drop", "volume", "us_customary", 0.05),
+    "dash": UnitDefinition("dash", "dash", "volume", "us_customary", 0.62),  # ~1/8 tsp
+    "pinch": UnitDefinition("pinch", "pinch", "volume", "us_customary", 0.31),  # ~1/16 tsp
     
     # Count units
     "count": UnitDefinition("count", "count", "count", "universal", 1.0),
     "piece": UnitDefinition("piece", "piece", "count", "universal", 1.0),
+    "pieces": UnitDefinition("piece", "piece", "count", "universal", 1.0),
+    "whole": UnitDefinition("whole", "whole", "count", "universal", 1.0),
+    "clove": UnitDefinition("clove", "clove", "count", "universal", 1.0),
+    "cloves": UnitDefinition("clove", "clove", "count", "universal", 1.0),
 }
 
 # Common ingredient densities (grams per ml)

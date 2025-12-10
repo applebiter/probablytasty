@@ -91,6 +91,10 @@ class MainWindow(QMainWindow):
         new_btn.clicked.connect(self.on_new_recipe)
         button_layout.addWidget(new_btn)
         
+        import_btn = QPushButton("Import URL")
+        import_btn.clicked.connect(self.on_import_url)
+        button_layout.addWidget(import_btn)
+        
         delete_btn = QPushButton("Delete")
         delete_btn.clicked.connect(self.on_delete_recipe)
         button_layout.addWidget(delete_btn)
@@ -158,6 +162,9 @@ class MainWindow(QMainWindow):
         
         import_action = file_menu.addAction("Import Recipes...")
         import_action.triggered.connect(self.on_import)
+        
+        import_image_action = file_menu.addAction("Import from Images...")
+        import_image_action.triggered.connect(self.on_import_images)
         
         export_action = file_menu.addAction("Export Recipes...")
         export_action.triggered.connect(self.on_export)
@@ -253,6 +260,10 @@ class MainWindow(QMainWindow):
         """Handle new recipe button."""
         pass  # Will be connected to controller
     
+    def on_import_url(self):
+        """Handle import from URL button."""
+        pass  # Will be connected to controller
+    
     def on_edit_recipe(self):
         """Handle edit recipe button."""
         pass  # Will be connected to controller
@@ -276,6 +287,10 @@ class MainWindow(QMainWindow):
     
     def on_import(self):
         """Handle import menu action."""
+        pass  # Will be connected to controller
+    
+    def on_import_images(self):
+        """Handle import from images menu action."""
         pass  # Will be connected to controller
     
     def on_export(self):

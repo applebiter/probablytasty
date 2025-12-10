@@ -40,42 +40,79 @@ All of this from a single paragraph request.
 
 ---
 
-## Stage 2: AI Implementation
+## Stage 2: AI Implementation - The Initial Prototype
 
-With the architecture document in hand, the next step was to build the actual application. Working with a second AI assistant (GitHub Copilot), the implementation phase proceeded as follows:
+With the architecture document in hand, the next step was to build the actual application. Working with a second AI assistant (GitHub Copilot), the initial implementation created a **functional prototype**:
 
-### What the Human Did:
-1. Asked the AI to implement the architecture
-2. Protected API keys from git (.env file)
-3. Gave the "go ahead" signal
+### Initial Prototype (30 minutes):
+The AI rapidly produced:
+1. **Complete project structure** (17 Python files)
+2. **All 7 database models** with SQLAlchemy
+3. **5 core services** (recipe CRUD, unit conversion, LLM abstraction, search, import/export)
+4. **Full PySide6 UI** (main window, recipe editor, search interface)
+5. **Application controller** (MVP pattern)
+6. **Comprehensive documentation** (4 markdown files)
 
-### What the AI Did:
-1. Created **complete project structure** (17 Python files)
-2. Implemented **all 7 database models** with SQLAlchemy
-3. Built **5 core services**:
-   - Recipe CRUD operations
-   - Sophisticated unit conversion (20+ units, ingredient-aware)
-   - LLM client abstraction (OpenAI, Anthropic, Google)
-   - AI-powered search orchestrator
-   - Import/export utilities
-4. Developed **full PySide6 UI**:
-   - Main window with recipe browser
-   - Recipe editor dialog with validation
-   - Search interface with natural language support
-5. Created **application controller** (MVP pattern)
-6. Wrote **comprehensive documentation** (4 markdown files)
-7. Added **test suite** with unit tests
-8. Included **sample data** and working examples
+**Result**: ~2,500+ lines of working Python code in under 30 minutes.
 
-**Total Time**: Approximately 20-30 minutes from start to finish.
+### Reality Check:
+The prototype worked, but wasn't production-ready. Real-world use revealed issues:
+- Quantity fields couldn't handle ranges ("4-6 lbs") or fractions ("1/2 cup")
+- Unit names needed flexibility ("tablespoon" vs "tbsp")
+- Import path issues prevented running the app
+- No settings UI for non-technical users
+- Recipe URL import would be incredibly useful
 
-**Lines of Code**: ~2,500+ fully functional, documented Python code.
+## Stage 3: Iterative Refinement
+
+**This is where the real work happened.** Over the course of actual development:
+
+### Database Schema Evolution:
+- Changed `quantity` fields from Float to String to support ranges and fractions
+- Recreated database with migration strategy
+- Added flexibility for real-world recipe variations
+
+### Enhanced Unit System:
+- Added 40+ unit aliases ("tablespoon", "tablespoons", "tbsp" all work)
+- Added specialty units (drops, pinches, dashes)
+- Made unit handling more forgiving for user input
+
+### Recipe URL Import (Major Feature Addition):
+- Integrated `recipe-scrapers` library (100+ supported sites)
+- Built import dialog with preview
+- Added LLM fallback for unsupported sites
+- Background threading to prevent UI freezing
+- Result: Copy any recipe URL, click import, done!
+
+### Ollama Integration:
+- Added local LLM support for privacy-conscious users
+- Created `OllamaClient` alongside cloud providers
+- Configured for small models (granite4:tiny-h) to large
+- Tested with remote Ollama servers on local network
+
+### Settings System for End Users:
+- Built comprehensive preferences dialog
+- **Simple mode**: Non-technical users pick provider from dropdown
+- **Advanced mode**: Power users configure URLs, models, API keys
+- Persistent settings saved to `~/.probablytasty/settings.json`
+- Password-masked fields, helpful links to get API keys
+- Default to Ollama (works out of box, no API keys needed)
+
+### Development Infrastructure:
+- Fixed Python path issues with `sys.path` manipulation
+- Created `run.sh` launcher script
+- Updated documentation to reflect real setup
+- Corrected development story to be honest about process
+
+**Iterative Development Time**: Several hours across multiple sessions
+
+**Total Lines of Code**: ~3,500+ (40% growth from prototype)
 
 ---
 
-## The Result: A Production-Ready Application
+## The Result: A Genuinely Useful Application
 
-What emerged is not a toy or a proof-of-concept, but a **genuinely useful application** with:
+What emerged through iteration is **a practical, working application** with:
 
 ### Core Features
 - ✅ Full recipe CRUD operations
@@ -115,18 +152,21 @@ The first AI produced an exceptional architecture because it:
 
 This shows that **AI can serve as an expert consultant** even when you don't know what questions to ask.
 
-### 2. **Implementation Speed is Revolutionary**
+### 2. **Implementation Speed is Dramatically Improved**
 
 Traditional development of this application would require:
-- **Research**: Learning PySide6, SQLAlchemy, LLM APIs (weeks)
-- **Architecture**: Designing database schema, service layers (days)
-- **Implementation**: Writing 2,500+ lines of code (weeks)
-- **Testing**: Debugging, testing, refining (weeks)
-- **Documentation**: Writing docs, examples (days)
+- **Research**: Learning PySide6, SQLAlchemy, LLM APIs (1-2 weeks)
+- **Architecture**: Designing database schema, service layers (2-3 days)
+- **Implementation**: Writing 3,500+ lines of code (2-3 weeks)
+- **Testing**: Debugging, testing, refining (1-2 weeks)
+- **Documentation**: Writing docs, examples (2-3 days)
 
-**Total**: Easily 1-2 months for an experienced developer.
+**Total**: 6-8 weeks for an experienced developer.
 
-**AI-Assisted Time**: ~30 minutes
+**AI-Assisted Development**:
+- Initial prototype: 30 minutes
+- Iterative refinement: Several hours across multiple sessions
+- **Total**: Completed in days instead of weeks, with better architecture than typical first attempts
 
 ### 3. **Development is Accelerated**
 
@@ -184,9 +224,9 @@ The AI provides:
 ### What Humans Bring:
 - ✅ Clear vision of what needs to exist
 - ✅ Domain knowledge and use cases
-- ✅ Judgment on design decisions
-- ✅ Testing and validation
-- ✅ Iterative refinement
+- ✅ Real-world testing that reveals edge cases
+- ✅ Feature ideas from actual usage
+- ✅ Iterative refinement based on experience
 
 ### Practical Tips:
 
@@ -257,6 +297,42 @@ This project is evidence that we're at an inflection point in software developme
 
 ---
 
+## The Honest Truth About AI Development
+
+### It's Not Magic, It's Iteration
+
+The initial 30-minute prototype was impressive but incomplete. The real value came from:
+
+1. **Actual Use**: Running the app revealed what didn't work (quantity fields, import paths, etc.)
+2. **Human Creativity**: Thinking "wouldn't URL import be great?" and asking AI to build it
+3. **Domain Knowledge**: Knowing that recipes use ranges and fractions, not just decimals
+4. **Iterative Refinement**: Each problem → AI solution → testing → next problem
+
+### AI as a Development Partner
+
+Think of AI as an extremely fast, knowledgeable junior developer who:
+- **Strengths**: Writes boilerplate quickly, knows patterns, never gets tired
+- **Weaknesses**: Doesn't understand your specific needs until you explain them
+- **Sweet Spot**: Implementing solutions to clearly-defined problems
+
+You still need to:
+- Know what you want (or discover it through use)
+- Test and identify problems
+- Ask for improvements and additions
+- Make architectural decisions
+
+### The Productivity Multiplier
+
+**Without AI**: 6-8 weeks solo development
+**With AI**: 
+- Day 1: Working prototype (30 min) + initial testing
+- Days 2-3: Iterative improvements based on real use
+- Days 4-5: Polish, documentation, deployment
+
+**Result**: ~10x faster development, but not instant. The speed comes from AI implementing solutions quickly while you focus on discovering what needs solving.
+
+---
+
 ## Try It Yourself
 
 This application is open source and documented. You can:
@@ -265,10 +341,12 @@ This application is open source and documented. You can:
 2. **Study it**: Read the code to learn Python, PySide6, SQLAlchemy
 3. **Extend it**: Add features you want (AI can help!)
 4. **Replicate the process**: Try building your own app idea
+5. **See the evolution**: Check git history to see how it grew from prototype
 
 The files are all here:
 - `MY_QUERY.md` - The original one-paragraph request
 - `GPT5.1_RESPONSE.md` - The AI-generated architecture (615 lines)
+- Git history - Shows the iterative development process
 - `src/` - The complete implementation (~2,500 lines)
 - `ARCHITECTURE.md` - Technical documentation
 - `QUICKSTART.md` - How to run it

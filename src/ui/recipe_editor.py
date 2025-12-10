@@ -219,10 +219,12 @@ class RecipeEditorDialog(QDialog):
             prep_item = self.ingredients_table.item(row, 3)
             
             if name_item and name_item.text().strip():
+                quantity_text = quantity_item.text() if quantity_item else "1"
                 try:
-                    quantity = float(quantity_item.text() if quantity_item else 1)
+                    quantity = float(quantity_text)
                 except ValueError:
-                    quantity = 1
+                    # If can't parse as float, keep as string for ranges like "4-6"
+                    quantity = quantity_text
                 
                 ingredients.append({
                     "quantity": quantity,
