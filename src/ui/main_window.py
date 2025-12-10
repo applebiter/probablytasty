@@ -8,8 +8,11 @@ from PySide6.QtWidgets import (
     QLabel, QSplitter, QMessageBox, QListWidgetItem,
 )
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QIcon
 from typing import Optional, List
+from pathlib import Path
 from src.models import Recipe
+from src.ui.unit_conversion_dialog import format_quantity_as_fraction
 
 
 class MainWindow(QMainWindow):
@@ -24,6 +27,11 @@ class MainWindow(QMainWindow):
         """Initialize the user interface."""
         self.setWindowTitle("ProbablyTasty - Recipe Manager")
         self.setGeometry(100, 100, 1200, 800)
+        
+        # Set window icon
+        icon_path = Path(__file__).parent.parent.parent / "icons" / "applebiter.png"
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
         
         # Central widget
         central_widget = QWidget()
@@ -70,32 +78,71 @@ class MainWindow(QMainWindow):
         self.search_input.returnPressed.connect(self.on_search)
         layout.addWidget(self.search_input)
         
-        # Search button
-        search_btn = QPushButton("Search")
+        # Search buttons row
+        search_btn_layout = QHBoxLayout()
+        search_btn = QPushButton("🔍 Search")
         search_btn.clicked.connect(self.on_search)
-        layout.addWidget(search_btn)
+        search_btn_layout.addWidget(search_btn)
         
-        # Recipe list
+        clear_btn = QPushButton("✕ Clear")
+        clear_btn.clicked.connect(self.on_clear_search)
+        search_btn_layout.addWidget(clear_btn)
+        layout.addLayout(search_btn_layout)
+        
+        # Filters section
+        from PySide6.QtWidgets import QComboBox, QCheckBox
+        filters_layout = QHBoxLayout()
+        
+        # Max time filter
+        time_label = QLabel("Total Time:")
+        filters_layout.addWidget(time_label)
+        
+        self.max_time_combo = QComboBox()
+        self.max_time_combo.addItems([
+            "Any",
+            "15 min",
+            "30 min",
+            "45 min",
+            "1 hour",
+            "2 hours"
+        ])
+        self.max_time_combo.currentTextChanged.connect(self.on_filter_changed)
+        filters_layout.addWidget(self.max_time_combo)
+        
+        filters_layout.addStretch()
+        layout.addLayout(filters_layout)
+        
+        # Recipe tree view
         recipes_label = QLabel("Recipes")
         recipes_label.setStyleSheet("font-weight: bold; font-size: 14px; margin-top: 10px;")
         layout.addWidget(recipes_label)
         
-        self.recipe_list = QListWidget()
-        self.recipe_list.itemClicked.connect(self.on_recipe_selected)
-        layout.addWidget(self.recipe_list)
+        from PySide6.QtWidgets import QTreeWidget
+        from PySide6.QtCore import Qt
+        
+        self.recipe_tree = QTreeWidget()
+        self.recipe_tree.setHeaderHidden(True)
+        self.recipe_tree.itemClicked.connect(self.on_recipe_selected)
+        self.recipe_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.recipe_tree.customContextMenuRequested.connect(self.on_tree_context_menu)
+        layout.addWidget(self.recipe_tree)
         
         # Action buttons
         button_layout = QHBoxLayout()
         
-        new_btn = QPushButton("New Recipe")
+        new_btn = QPushButton("➕ New Recipe")
         new_btn.clicked.connect(self.on_new_recipe)
         button_layout.addWidget(new_btn)
         
-        import_btn = QPushButton("Import URL")
-        import_btn.clicked.connect(self.on_import_url)
-        button_layout.addWidget(import_btn)
+        import_url_btn = QPushButton("🔗 Import URL")
+        import_url_btn.clicked.connect(self.on_import_url)
+        button_layout.addWidget(import_url_btn)
         
-        delete_btn = QPushButton("Delete")
+        import_images_btn = QPushButton("📷 Import Images")
+        import_images_btn.clicked.connect(self.on_import_images)
+        button_layout.addWidget(import_images_btn)
+        
+        delete_btn = QPushButton("🗑️ Delete")
         delete_btn.clicked.connect(self.on_delete_recipe)
         button_layout.addWidget(delete_btn)
         
@@ -128,10 +175,25 @@ class MainWindow(QMainWindow):
         self.recipe_description.setMaximumHeight(100)
         layout.addWidget(self.recipe_description)
         
-        # Ingredients
+        # Ingredients with convert button
+        ingredients_header = QHBoxLayout()
         ingredients_label = QLabel("Ingredients")
         ingredients_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
-        layout.addWidget(ingredients_label)
+        ingredients_header.addWidget(ingredients_label)
+        
+        ingredients_header.addStretch()
+        
+        self.scale_recipe_btn = QPushButton("Scale Recipe")
+        self.scale_recipe_btn.clicked.connect(self.on_scale_recipe)
+        self.scale_recipe_btn.setEnabled(False)
+        ingredients_header.addWidget(self.scale_recipe_btn)
+        
+        self.convert_units_btn = QPushButton("Convert Units")
+        self.convert_units_btn.clicked.connect(self.on_convert_units)
+        self.convert_units_btn.setEnabled(False)
+        ingredients_header.addWidget(self.convert_units_btn)
+        
+        layout.addLayout(ingredients_header)
         
         self.ingredients_list = QListWidget()
         self.ingredients_list.setMaximumHeight(200)
@@ -146,10 +208,20 @@ class MainWindow(QMainWindow):
         self.recipe_instructions.setReadOnly(True)
         layout.addWidget(self.recipe_instructions)
         
-        # Edit button
-        edit_btn = QPushButton("Edit Recipe")
+        # Action buttons
+        action_buttons = QHBoxLayout()
+        action_buttons.addStretch()
+        
+        self.print_recipe_btn = QPushButton("🖨️ Print Recipe")
+        self.print_recipe_btn.clicked.connect(self.on_print_recipe)
+        self.print_recipe_btn.setEnabled(False)
+        action_buttons.addWidget(self.print_recipe_btn)
+        
+        edit_btn = QPushButton("✏️ Edit Recipe")
         edit_btn.clicked.connect(self.on_edit_recipe)
-        layout.addWidget(edit_btn)
+        action_buttons.addWidget(edit_btn)
+        
+        layout.addLayout(action_buttons)
         
         return panel
     
@@ -158,45 +230,130 @@ class MainWindow(QMainWindow):
         menubar = self.menuBar()
         
         # File menu
-        file_menu = menubar.addMenu("File")
+        file_menu = menubar.addMenu("📁 File")
         
-        import_action = file_menu.addAction("Import Recipes...")
+        import_action = file_menu.addAction("📥 Import Recipes...")
         import_action.triggered.connect(self.on_import)
         
-        import_image_action = file_menu.addAction("Import from Images...")
+        import_url_action = file_menu.addAction("🔗 Import from URL...")
+        import_url_action.triggered.connect(self.on_import_url)
+        
+        import_image_action = file_menu.addAction("📷 Import from Images...")
         import_image_action.triggered.connect(self.on_import_images)
         
-        export_action = file_menu.addAction("Export Recipes...")
+        export_action = file_menu.addAction("📤 Export Recipes...")
         export_action.triggered.connect(self.on_export)
         
         file_menu.addSeparator()
         
-        exit_action = file_menu.addAction("Exit")
+        exit_action = file_menu.addAction("🚪 Exit")
         exit_action.triggered.connect(self.close)
         
-        # Settings menu
-        settings_menu = menubar.addMenu("Settings")
+        # Tools menu
+        tools_menu = menubar.addMenu("🔧 Tools")
         
-        preferences_action = settings_menu.addAction("Preferences...")
+        shopping_list_action = tools_menu.addAction("🛒 Generate Shopping List...")
+        shopping_list_action.triggered.connect(self.on_shopping_list)
+        
+        # Settings menu
+        settings_menu = menubar.addMenu("⚙️ Settings")
+        
+        preferences_action = settings_menu.addAction("⚙️ Preferences...")
         preferences_action.triggered.connect(self.on_preferences)
         
         # Help menu
-        help_menu = menubar.addMenu("Help")
+        help_menu = menubar.addMenu("❓ Help")
         
-        about_action = help_menu.addAction("About")
+        about_action = help_menu.addAction("ℹ️ About")
         about_action.triggered.connect(self.on_about)
     
     def load_recipes(self, recipes: List[Recipe]):
-        """Load recipes into the list widget."""
-        self.recipe_list.clear()
+        """Load recipes into the tree widget organized by tags."""
+        self.recipe_tree.clear()
+        
+        if not recipes:
+            return
+        
+        self._build_tag_tree(recipes)
+    
+    def _build_tag_tree(self, recipes: List[Recipe]):
+        """Build simple tree grouping recipes by tags (no hierarchy)."""
+        from PySide6.QtWidgets import QTreeWidgetItem
+        from PySide6.QtCore import Qt
+        
+        # Group recipes by tag
+        recipes_by_tag = {}
+        untagged_recipes = []
+        
         for recipe in recipes:
-            item = QListWidgetItem(recipe.title)
-            item.setData(Qt.UserRole, recipe.id)
-            self.recipe_list.addItem(item)
+            if recipe.tags:
+                for tag in recipe.tags:
+                    if tag.name not in recipes_by_tag:
+                        recipes_by_tag[tag.name] = []
+                    recipes_by_tag[tag.name].append(recipe)
+            else:
+                untagged_recipes.append(recipe)
+        
+        # Create tag folders and add recipes
+        for tag_name in sorted(recipes_by_tag.keys()):
+            tag_item = QTreeWidgetItem([f"{tag_name} ({len(recipes_by_tag[tag_name])})"])
+            tag_item.setData(0, Qt.UserRole, None)
+            tag_item.setData(0, Qt.UserRole + 1, "tag")
+            self.recipe_tree.addTopLevelItem(tag_item)
+            
+            for recipe in sorted(recipes_by_tag[tag_name], key=lambda r: r.title):
+                recipe_item = QTreeWidgetItem(tag_item, [recipe.title])
+                recipe_item.setData(0, Qt.UserRole, recipe.id)
+                recipe_item.setData(0, Qt.UserRole + 1, "recipe")
+        
+        # Add untagged recipes
+        if untagged_recipes:
+            untagged_item = QTreeWidgetItem([f"Untagged ({len(untagged_recipes)})"])
+            untagged_item.setData(0, Qt.UserRole, None)
+            untagged_item.setData(0, Qt.UserRole + 1, "category")
+            self.recipe_tree.addTopLevelItem(untagged_item)
+            
+            for recipe in sorted(untagged_recipes, key=lambda r: r.title):
+                recipe_item = QTreeWidgetItem(untagged_item, [recipe.title])
+                recipe_item.setData(0, Qt.UserRole, recipe.id)
+                recipe_item.setData(0, Qt.UserRole + 1, "recipe")
+        
+        # Keep all categories collapsed by default
+        self.recipe_tree.collapseAll()
+    
+    def expand_recipe_nodes(self, recipe_id: int):
+        """Expand all tag nodes that contain the specified recipe."""
+        from PySide6.QtCore import Qt
+        
+        # Find all items with this recipe_id and expand their parents
+        def find_and_expand(item, parent_item=None):
+            # Check if this is a recipe item with matching ID
+            if item.data(0, Qt.UserRole + 1) == "recipe" and item.data(0, Qt.UserRole) == recipe_id:
+                # Expand the parent tag node
+                if parent_item:
+                    parent_item.setExpanded(True)
+                return True
+            
+            # Recursively check children
+            found = False
+            for i in range(item.childCount()):
+                if find_and_expand(item.child(i), item):
+                    found = True
+            
+            return found
+        
+        # Search through all top-level items
+        for i in range(self.recipe_tree.topLevelItemCount()):
+            find_and_expand(self.recipe_tree.topLevelItem(i))
     
     def display_recipe(self, recipe: Recipe):
         """Display recipe details in the right panel."""
         self.current_recipe = recipe
+        
+        # Enable action buttons
+        self.scale_recipe_btn.setEnabled(True)
+        self.convert_units_btn.setEnabled(True)
+        self.print_recipe_btn.setEnabled(True)
         
         # Update title
         self.recipe_title.setText(recipe.title)
@@ -221,7 +378,15 @@ class MainWindow(QMainWindow):
         self.ingredients_list.clear()
         for ri in recipe.ingredients:
             ingredient = ri.ingredient
-            text = f"{ri.display_quantity} {ri.display_unit} {ingredient.name}"
+            # Convert display_quantity to fraction if it's numeric
+            try:
+                quantity_value = float(ri.display_quantity)
+                formatted_quantity = format_quantity_as_fraction(quantity_value)
+            except (ValueError, TypeError):
+                # Keep as-is if not numeric (e.g., ranges like "4-6")
+                formatted_quantity = ri.display_quantity
+            
+            text = f"{formatted_quantity} {ri.display_unit} {ingredient.name}"
             if ri.preparation:
                 text += f", {ri.preparation}"
             self.ingredients_list.addItem(text)
@@ -241,6 +406,9 @@ class MainWindow(QMainWindow):
     def clear_recipe_display(self):
         """Clear the recipe display."""
         self.current_recipe = None
+        self.scale_recipe_btn.setEnabled(False)
+        self.convert_units_btn.setEnabled(False)
+        self.print_recipe_btn.setEnabled(False)
         self.recipe_title.setText("Select a recipe")
         self.recipe_meta.setText("")
         self.recipe_description.clear()
@@ -249,12 +417,50 @@ class MainWindow(QMainWindow):
     
     # Event handlers (to be connected to controller)
     def on_search(self):
-        """Handle search button click."""
+        """Handle search button click"""
         pass  # Will be connected to controller
     
-    def on_recipe_selected(self, item: QListWidgetItem):
-        """Handle recipe selection."""
-        pass  # Will be connected to controller
+    def on_clear_search(self):
+        """Clear search input and filters, return tree to default state"""
+        self.search_input.clear()
+        self.max_time_combo.setCurrentIndex(0)
+        if hasattr(self, 'controller') and self.controller:
+            self.controller.load_all_recipes()
+            # Collapse all nodes back to default state
+            self.recipe_tree.collapseAll()
+    
+    def on_filter_changed(self):
+        """Handle filter change - trigger search if there's query text"""
+        if self.search_input.text().strip():
+            self.on_search()
+    
+    def on_recipe_selected(self, item, column=0):
+        """Handle recipe selection from tree."""
+        # This will be overridden by controller
+        pass
+    
+    def on_tree_context_menu(self, position):
+        """Handle right-click context menu on tree."""
+        from PySide6.QtCore import Qt
+        
+        item = self.recipe_tree.itemAt(position)
+        if not item:
+            return
+        
+        item_type = item.data(0, Qt.UserRole + 1)
+        menu = QMenu()
+        
+        if item_type == "recipe":
+            edit_action = menu.addAction("Edit Recipe")
+            menu.addSeparator()
+            delete_action = menu.addAction("Delete Recipe")
+            
+            action = menu.exec_(self.recipe_tree.viewport().mapToGlobal(position))
+            
+            if action == edit_action:
+                self.on_edit_recipe()
+            elif action == delete_action:
+                self.on_delete_recipe()
     
     def on_new_recipe(self):
         """Handle new recipe button."""
@@ -301,6 +507,22 @@ class MainWindow(QMainWindow):
         """Handle preferences menu action."""
         pass  # Will be connected to controller
     
+    def on_scale_recipe(self):
+        """Handle scale recipe button click."""
+        pass  # Will be connected to controller
+    
+    def on_convert_units(self):
+        """Handle convert units button click."""
+        pass  # Will be connected to controller
+    
+    def on_print_recipe(self):
+        """Handle print recipe button click."""
+        pass  # Will be connected to controller
+    
+    def on_shopping_list(self):
+        """Handle shopping list menu click."""
+        pass  # Will be connected to controller
+    
     def on_about(self):
         """Show about dialog."""
         QMessageBox.about(
@@ -310,4 +532,5 @@ class MainWindow(QMainWindow):
             "<p>An intelligent recipe management application with AI-powered search.</p>"
             "<p>Version 0.1.0</p>"
             "<p>Built with PySide6 and Python</p>"
+            "<p style='margin-top: 10px;'><i>Made by applebiter for his mother.</i></p>"
         )

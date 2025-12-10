@@ -9,6 +9,18 @@ from sqlalchemy.orm import Session
 from src.models import Recipe, Ingredient, RecipeIngredient, Tag
 from src.services.recipe_service import RecipeService
 
+try:
+    from bs4 import BeautifulSoup
+    BEAUTIFULSOUP_AVAILABLE = True
+except ImportError:
+    BEAUTIFULSOUP_AVAILABLE = False
+
+try:
+    from jinja2 import Template
+    JINJA2_AVAILABLE = True
+except ImportError:
+    JINJA2_AVAILABLE = False
+
 
 class RecipeImporter:
     """Import recipes from various formats."""
@@ -163,6 +175,63 @@ class RecipeImporter:
                     )
         
         return recipe
+    
+    def import_from_html(self, file_path: str) -> List[Recipe]:
+        """
+        Import recipes from self-contained HTML file.
+        Extracts JSON data from <script type="application/json" id="recipe-data"> tag.
+        """
+        if not BEAUTIFULSOUP_AVAILABLE:
+            raise ImportError("BeautifulSoup4 is required for HTML import. Install with: pip install beautifulsoup4")
+        
+        with open(file_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Find the embedded JSON data
+        json_script = soup.find('script', {'type': 'application/json', 'id': 'recipe-data'})
+        
+        if not json_script:
+            raise ValueError("No recipe data found in HTML file. Expected <script type='application/json' id='recipe-data'>")
+        
+        recipe_data = json.loads(json_script.string)
+        
+        # Import as if it were JSON
+        try:
+            # Create recipe
+            recipe = self.recipe_service.create_recipe(
+                title=recipe_data["title"],
+                instructions=recipe_data["instructions"],
+                description=recipe_data.get("description"),
+                servings=recipe_data.get("servings", 4),
+                prep_time_minutes=recipe_data.get("prep_time_minutes"),
+                cook_time_minutes=recipe_data.get("cook_time_minutes"),
+                source_url=recipe_data.get("source_url"),
+            )
+            
+            # Add ingredients
+            for idx, ingredient_data in enumerate(recipe_data.get("ingredients", [])):
+                self.recipe_service.add_ingredient_to_recipe(
+                    recipe_id=recipe.id,
+                    ingredient_name=ingredient_data["name"],
+                    quantity=ingredient_data["quantity"],
+                    unit=ingredient_data["unit"],
+                    display_quantity=ingredient_data.get("display_quantity", ingredient_data["quantity"]),
+                    display_unit=ingredient_data.get("display_unit", ingredient_data["unit"]),
+                    preparation=ingredient_data.get("preparation"),
+                    order_index=idx,
+                )
+            
+            # Add tags
+            for tag_name in recipe_data.get("tags", []):
+                self.recipe_service.add_tag_to_recipe(recipe.id, tag_name)
+            
+            return [recipe]
+            
+        except Exception as e:
+            print(f"Error importing recipe from HTML '{recipe_data.get('title', 'unknown')}': {e}")
+            raise
 
 
 class RecipeExporter:
@@ -267,3 +336,49 @@ class RecipeExporter:
         
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write('\n'.join(lines))
+    
+    def export_to_html(self, recipe: Recipe, file_path: str):
+        """Export a single recipe to self-contained HTML file with embedded JavaScript."""
+        if not JINJA2_AVAILABLE:
+            raise ImportError("Jinja2 is required for HTML export. Install with: pip install jinja2")
+        
+        # Prepare recipe data
+        recipe_data = {
+            "title": recipe.title,
+            "description": recipe.description,
+            "instructions": recipe.instructions,
+            "servings": recipe.servings,
+            "prep_time_minutes": recipe.prep_time_minutes,
+            "cook_time_minutes": recipe.cook_time_minutes,
+            "total_time_minutes": recipe.total_time_minutes,
+            "source_url": recipe.source_url,
+            "ingredients": [
+                {
+                    "name": ri.ingredient.name,
+                    "quantity": float(ri.display_quantity) if ri.display_quantity else 0,
+                    "unit": ri.display_unit or "",
+                    "preparation": ri.preparation or "",
+                }
+                for ri in recipe.ingredients
+            ],
+            "tags": [tag.name for tag in recipe.tags],
+        }
+        
+        # Load template
+        template_path = Path(__file__).parent.parent / "templates" / "recipe.html"
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template_content = f.read()
+        
+        template = Template(template_content)
+        
+        # Render with embedded JSON (properly indented)
+        recipe_json = json.dumps(recipe_data, indent=2, ensure_ascii=False)
+        html_output = template.render(
+            title=recipe.title,
+            description=recipe.description,
+            recipe_json=recipe_json
+        )
+        
+        # Write to file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(html_output)

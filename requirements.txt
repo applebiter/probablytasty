@@ -12,9 +12,7 @@ google-generativeai>=0.3.0
 recipe-scrapers>=14.0.0
 beautifulsoup4>=4.12.0
 requests>=2.31.0
-
-# Environment and configuration
-python-dotenv>=1.0.0
+jinja2>=3.1.0
 
 # Data handling
 pydantic>=2.0.0
@@ -26,7 +24,8 @@ pydantic>=2.0.0
 # openai-whisper>=20231117  # Uncomment for local STT
 # pyttsx3>=2.90  # Uncomment for local TTS
 
-# Development dependencies
+# Development and build dependencies
 pytest>=7.4.0
 pytest-qt>=4.2.0
 black>=23.0.0
+pyinstaller>=6.0.0

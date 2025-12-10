@@ -111,9 +111,14 @@ class RecipeEditorDialog(QDialog):
         self.instructions_input.setMinimumHeight(200)
         layout.addWidget(self.instructions_input)
         
+        # Add spacing before tags section
+        layout.addSpacing(15)
+        
         # Tags
         tags_layout = QHBoxLayout()
-        tags_layout.addWidget(QLabel("Tags (comma-separated):"))
+        tags_label = QLabel("Tags (comma-separated):")
+        tags_label.setStyleSheet("font-weight: bold;")
+        tags_layout.addWidget(tags_label)
         self.tags_input = QLineEdit()
         self.tags_input.setPlaceholderText("e.g., vegetarian, quick, dessert")
         tags_layout.addWidget(self.tags_input)

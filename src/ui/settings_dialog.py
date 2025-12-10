@@ -191,6 +191,40 @@ class SettingsDialog(QDialog):
         self.simple_api_group.setLayout(api_layout)
         layout.addWidget(self.simple_api_group)
         
+        # Display Settings group
+        display_group = QGroupBox("Display Settings")
+        display_layout = QFormLayout()
+        
+        # Theme selection
+        self.theme_combo = QComboBox()
+        self.theme_combo.addItems(["Light", "Dark"])
+        self.theme_combo.currentIndexChanged.connect(self.on_theme_changed)
+        display_layout.addRow("Theme:", self.theme_combo)
+        
+        theme_help = QLabel("Choose your preferred color theme. Changes apply immediately.")
+        theme_help.setWordWrap(True)
+        theme_help.setStyleSheet("color: #666; font-size: 11px;")
+        display_layout.addRow("", theme_help)
+        
+        self.font_size_combo = QComboBox()
+        self.font_size_combo.addItems([
+            "Small (10pt)",
+            "Normal (12pt)",
+            "Large (14pt)",
+            "Extra Large (16pt)",
+            "Huge (20pt)"
+        ])
+        self.font_size_combo.currentIndexChanged.connect(self.on_font_size_changed)
+        display_layout.addRow("Font Size:", self.font_size_combo)
+        
+        font_help = QLabel("Adjust text size for better readability. Changes apply immediately.")
+        font_help.setWordWrap(True)
+        font_help.setStyleSheet("color: #666; font-size: 11px;")
+        display_layout.addRow("", font_help)
+        
+        display_group.setLayout(display_layout)
+        layout.addWidget(display_group)
+        
         layout.addStretch()
         
         return widget
@@ -286,8 +320,9 @@ class SettingsDialog(QDialog):
         self.openai_key_input.setPlaceholderText("sk-...")
         openai_layout.addRow("API Key:", self.openai_key_input)
         
-        self.openai_model_input = QLineEdit()
-        self.openai_model_input.setPlaceholderText("gpt-4o-mini")
+        self.openai_model_input = QComboBox()
+        self.openai_model_input.setEditable(True)
+        self.openai_model_input.addItems(["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"])
         openai_layout.addRow("Model:", self.openai_model_input)
         
         openai_group.setLayout(openai_layout)
@@ -302,8 +337,13 @@ class SettingsDialog(QDialog):
         self.anthropic_key_input.setPlaceholderText("sk-ant-...")
         anthropic_layout.addRow("API Key:", self.anthropic_key_input)
         
-        self.anthropic_model_input = QLineEdit()
-        self.anthropic_model_input.setPlaceholderText("claude-3-5-sonnet-20241022")
+        self.anthropic_model_input = QComboBox()
+        self.anthropic_model_input.setEditable(True)
+        self.anthropic_model_input.addItems([
+            "claude-3-5-sonnet-20241022",
+            "claude-3-5-haiku-20241022",
+            "claude-3-opus-20240229"
+        ])
         anthropic_layout.addRow("Model:", self.anthropic_model_input)
         
         anthropic_group.setLayout(anthropic_layout)
@@ -318,8 +358,13 @@ class SettingsDialog(QDialog):
         self.google_key_input.setPlaceholderText("AIza...")
         google_layout.addRow("API Key:", self.google_key_input)
         
-        self.google_model_input = QLineEdit()
-        self.google_model_input.setPlaceholderText("gemini-1.5-flash")
+        self.google_model_input = QComboBox()
+        self.google_model_input.setEditable(True)
+        self.google_model_input.addItems([
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-2.0-flash-exp"
+        ])
         google_layout.addRow("Model:", self.google_model_input)
         
         google_group.setLayout(google_layout)
@@ -353,6 +398,20 @@ class SettingsDialog(QDialog):
         }
         self.simple_api_help.setText(help_texts.get(provider, ""))
     
+    def on_font_size_changed(self, index):
+        """Apply font size change immediately."""
+        from PySide6.QtWidgets import QApplication
+        from PySide6.QtGui import QFont
+        
+        font_sizes = [10, 12, 14, 16, 20]
+        font_size = font_sizes[index]
+        
+        # Apply to entire application immediately
+        app = QApplication.instance()
+        font = QFont()
+        font.setPointSize(font_size)
+        app.setFont(font)
+    
     def load_settings(self) -> dict:
         """Load settings from file."""
         if self.settings_file.exists():
@@ -374,6 +433,35 @@ class SettingsDialog(QDialog):
             "google_key": "",
             "google_model": "gemini-1.5-flash",
         }
+    
+    def on_theme_changed(self, index):
+        """Handle theme selection change - apply immediately for live preview."""
+        theme = "light" if index == 0 else "dark"
+        self._apply_theme(theme)
+    
+    def _apply_theme(self, theme: str):
+        """Apply theme immediately to the application."""
+        from PySide6.QtWidgets import QApplication
+        from pathlib import Path
+        
+        theme_file = Path(__file__).parent / "themes" / f"{theme}.qss"
+        print(f"DEBUG: Applying theme '{theme}' from {theme_file}")
+        print(f"DEBUG: Theme file exists: {theme_file.exists()}")
+        try:
+            if theme_file.exists():
+                with open(theme_file, 'r') as f:
+                    stylesheet = f.read()
+                    app = QApplication.instance()
+                    if app:
+                        print(f"DEBUG: Applying stylesheet ({len(stylesheet)} chars)")
+                        app.setStyleSheet(stylesheet)
+                        print("DEBUG: Theme applied successfully")
+                    else:
+                        print("DEBUG: No QApplication instance found")
+            else:
+                print(f"DEBUG: Theme file not found: {theme_file}")
+        except Exception as e:
+            print(f"Failed to apply theme {theme}: {e}")
     
     def load_values(self):
         """Load settings values into UI."""
@@ -403,14 +491,23 @@ class SettingsDialog(QDialog):
         self.ollama_context_combo.setCurrentIndex(context_map.get(context_length, 1))
         
         self.openai_key_input.setText(self.settings.get("openai_key", ""))
-        self.openai_model_input.setText(self.settings.get("openai_model", "gpt-4o-mini"))
+        self.openai_model_input.setCurrentText(self.settings.get("openai_model", "gpt-4o-mini"))
         self.anthropic_key_input.setText(self.settings.get("anthropic_key", ""))
-        self.anthropic_model_input.setText(self.settings.get("anthropic_model", "claude-3-5-sonnet-20241022"))
+        self.anthropic_model_input.setCurrentText(self.settings.get("anthropic_model", "claude-3-5-sonnet-20241022"))
         self.google_key_input.setText(self.settings.get("google_key", ""))
-        self.google_model_input.setText(self.settings.get("google_model", "gemini-1.5-flash"))
+        self.google_model_input.setCurrentText(self.settings.get("google_model", "gemini-1.5-flash"))
         
         provider_map_adv = {"ollama": 0, "openai": 1, "anthropic": 2, "google": 3, "none": 4}
         self.adv_provider_combo.setCurrentIndex(provider_map_adv.get(self.settings.get("provider", "ollama"), 0))
+        
+        # Load theme
+        theme = self.settings.get("theme", "light")
+        self.theme_combo.setCurrentIndex(0 if theme == "light" else 1)
+        
+        # Load font size
+        font_size_map = {10: 0, 12: 1, 14: 2, 16: 3, 20: 4}
+        font_size = self.settings.get("font_size", 10)
+        self.font_size_combo.setCurrentIndex(font_size_map.get(font_size, 0))
     
     def save_settings_and_close(self):
         """Save settings and close dialog."""
@@ -431,6 +528,13 @@ class SettingsDialog(QDialog):
         context_values = [4096, 8192, 16384, 32768]
         context_length = context_values[self.ollama_context_combo.currentIndex()]
         
+        # Get font size from combo
+        font_sizes = [10, 12, 14, 16, 20]
+        font_size = font_sizes[self.font_size_combo.currentIndex()]
+        
+        # Get theme
+        theme = "light" if self.theme_combo.currentIndex() == 0 else "dark"
+        
         settings = {
             "provider": simple_provider,
             "ollama_url": self.ollama_url_input.text() or "http://localhost:11434",
@@ -438,11 +542,13 @@ class SettingsDialog(QDialog):
             "ollama_vision_model": self.ollama_vision_model_combo.currentText() or "",
             "ollama_context_length": context_length,
             "openai_key": self.openai_key_input.text(),
-            "openai_model": self.openai_model_input.text() or "gpt-4o-mini",
+            "openai_model": self.openai_model_input.currentText() or "gpt-4o-mini",
             "anthropic_key": self.anthropic_key_input.text(),
-            "anthropic_model": self.anthropic_model_input.text() or "claude-3-5-sonnet-20241022",
+            "anthropic_model": self.anthropic_model_input.currentText() or "claude-3-5-sonnet-20241022",
             "google_key": self.google_key_input.text(),
-            "google_model": self.google_model_input.text() or "gemini-1.5-flash",
+            "google_model": self.google_model_input.currentText() or "gemini-1.5-flash",
+            "theme": theme,
+            "font_size": font_size,
         }
         
         # If simple tab API key is provided, update it
@@ -456,6 +562,9 @@ class SettingsDialog(QDialog):
             self.settings_file.parent.mkdir(parents=True, exist_ok=True)
             with open(self.settings_file, 'w') as f:
                 json.dump(settings, f, indent=2)
+            
+            # Apply theme immediately
+            self._apply_theme(theme)
             
             # Settings will be reloaded by controller - no restart needed
             self.accept()

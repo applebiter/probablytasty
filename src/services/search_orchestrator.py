@@ -161,14 +161,55 @@ Output: {"tags_include": ["dessert"], "required_ingredients": ["chocolate"]}"""
     
     def _simple_search(self, query: str, max_results: int) -> List[Recipe]:
         """Simple keyword-based search without LLM."""
+        from src.models import RecipeIngredient
+        
         search = f"%{query}%"
-        results = self.session.query(Recipe).filter(
+        
+        # Search in title, description, instructions
+        recipe_query = self.session.query(Recipe).filter(
             (Recipe.title.ilike(search)) |
             (Recipe.description.ilike(search)) |
             (Recipe.instructions.ilike(search))
-        ).order_by(Recipe.title).limit(max_results).all()
+        )
         
-        return results
+        # Also search in ingredient names
+        ingredient_query = self.session.query(Recipe).join(
+            RecipeIngredient
+        ).join(
+            Ingredient
+        ).filter(
+            Ingredient.name.ilike(search)
+        )
+        
+        # Also search in tags
+        tag_query = self.session.query(Recipe).join(
+            Recipe.tags
+        ).filter(
+            Tag.name.ilike(search)
+        )
+        
+        # Combine results (union) and remove duplicates
+        all_recipe_ids = set()
+        results = []
+        
+        for recipe in recipe_query.all():
+            if recipe.id not in all_recipe_ids:
+                all_recipe_ids.add(recipe.id)
+                results.append(recipe)
+        
+        for recipe in ingredient_query.all():
+            if recipe.id not in all_recipe_ids:
+                all_recipe_ids.add(recipe.id)
+                results.append(recipe)
+        
+        for recipe in tag_query.all():
+            if recipe.id not in all_recipe_ids:
+                all_recipe_ids.add(recipe.id)
+                results.append(recipe)
+        
+        # Sort by title and limit
+        results.sort(key=lambda r: r.title)
+        return results[:max_results]
     
     def get_search_suggestions(self, partial_query: str) -> List[str]:
         """Get search suggestions based on partial input."""

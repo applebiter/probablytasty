@@ -2,13 +2,8 @@
 Configuration management for ProbablyTasty.
 """
 
-import os
 import json
 from pathlib import Path
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -34,17 +29,16 @@ USER_SETTINGS = load_user_settings()
 # Database
 DATABASE_URL = f"sqlite:///{DATA_DIR / 'recipes.db'}"
 
-# API Keys (prioritize user settings, fall back to .env)
-OPENAI_API_KEY = USER_SETTINGS.get("openai_key") or os.getenv("OPENAI_API_KEY")
-ANTHROPIC_API_KEY = USER_SETTINGS.get("anthropic_key") or os.getenv("ANTHROPIC_API_KEY")
-GOOGLE_API_KEY = USER_SETTINGS.get("google_key") or os.getenv("GOOGLE_API_KEY")
-HF_TOKEN = os.getenv("HF_TOKEN")
+# API Keys from user settings (configured in app)
+OPENAI_API_KEY = USER_SETTINGS.get("openai_key", "")
+ANTHROPIC_API_KEY = USER_SETTINGS.get("anthropic_key", "")
+GOOGLE_API_KEY = USER_SETTINGS.get("google_key", "")
 
-# Ollama Configuration (prioritize user settings, fall back to .env)
-OLLAMA_BASE_URL = USER_SETTINGS.get("ollama_url") or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL = USER_SETTINGS.get("ollama_model") or os.getenv("OLLAMA_MODEL", "llama2")
-OLLAMA_VISION_MODEL = USER_SETTINGS.get("ollama_vision_model") or os.getenv("OLLAMA_VISION_MODEL", "")
-OLLAMA_CONTEXT_LENGTH = USER_SETTINGS.get("ollama_context_length") or int(os.getenv("OLLAMA_CONTEXT_LENGTH", "8192"))
+# Ollama Configuration from user settings
+OLLAMA_BASE_URL = USER_SETTINGS.get("ollama_url", "http://localhost:11434")
+OLLAMA_MODEL = USER_SETTINGS.get("ollama_model", "llama2")
+OLLAMA_VISION_MODEL = USER_SETTINGS.get("ollama_vision_model", "llava")
+OLLAMA_CONTEXT_LENGTH = USER_SETTINGS.get("ollama_context_length", 8192)
 
 # Application settings
 DEFAULT_UNIT_SYSTEM = "metric"  # or "imperial"

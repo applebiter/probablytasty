@@ -5,6 +5,16 @@
 *.key
 *.pem
 
+# PyInstaller build files
+build/
+dist/
+*.spec.backup
+*.egg-info/
+
+# Inno Setup build files
+Output/
+debian/
+
 # Media files (generated images, icons, logos)
 media/
 
@@ -57,6 +67,10 @@ logs/
 # Local configuration
 config.local.json
 settings.local.json
+
+# HTML exports (except example)
+*.html
+!example_recipe.html
 
 # Model files (can be large)
 models/

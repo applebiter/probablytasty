@@ -7,9 +7,16 @@
 │                     UI Layer (PySide6)                       │
 │  ┌─────────────────────┐    ┌──────────────────────────┐   │
 │  │   MainWindow        │    │  RecipeEditorDialog      │   │
-│  │  - Recipe list      │    │  - Form inputs           │   │
+│  │  - Tree view        │    │  - Form inputs           │   │
 │  │  - Search interface │    │  - Ingredient table      │   │
-│  │  - Recipe display   │    │  - Validation            │   │
+│  │  - Recipe display   │    │  - Tag management        │   │
+│  │  - Themes (Dark/Lt) │    │  - Validation            │   │
+│  └─────────────────────┘    └──────────────────────────┘   │
+│  ┌─────────────────────┐    ┌──────────────────────────┐   │
+│  │ SettingsDialog      │    │ ShoppingListDialog       │   │
+│  │  - LLM providers    │    │  - Recipe selection      │   │
+│  │  - API keys         │    │  - Category grouping     │   │
+│  │  - Theme switcher   │    │  - Print/Copy            │   │
 │  └─────────────────────┘    └──────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -32,13 +39,20 @@
 │  │  - CRUD ops     │  │  - NL queries     │  │  - OpenAI  │ │
 │  │  - Tags         │  │  - Filter builder │  │  - Claude  │ │
 │  │  - Ingredients  │  │  - Suggestions    │  │  - Gemini  │ │
-│  └─────────────────┘  └──────────────────┘  └────────────┘ │
-│                                                               │
-│  ┌─────────────────────┐        ┌──────────────────────┐   │
-│  │ UnitConversionSvc   │        │ Import/Export Utils  │   │
-│  │  - Metric/Imperial  │        │  - JSON format       │   │
-│  │  - Ingredient-aware │        │  - Markdown export   │   │
-│  └─────────────────────┘        └──────────────────────┘   │
+│  └─────────────────┘  └──────────────────┘  │  - Ollama  │ │
+│                                              └────────────┘ │
+│  ┌─────────────────────┐  ┌──────────────────────────────┐ │
+│  │ UnitConversionSvc   │  │ ShoppingListService          │ │
+│  │  - Metric/Imperial  │  │  - Consolidation             │ │
+│  │  - Ingredient-aware │  │  - Category grouping         │ │
+│  └─────────────────────┘  │  - Unit normalization        │ │
+│                            └──────────────────────────────┘ │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ Import/Export Utils                                   │  │
+│  │  - JSON format        - HTML (self-contained)         │  │
+│  │  - Markdown export    - URL scraping (recipe-scrapers)│  │
+│  │  - Image OCR/Vision   - BeautifulSoup parsing         │  │
+│  └──────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -84,13 +98,20 @@ All business logic encapsulated in services:
 LLMClient (Abstract)
     ├── OpenAIClient
     ├── AnthropicClient
-    └── GoogleClient
+    ├── GoogleClient
+    └── OllamaClient (local)
 
 LLMRouter selects provider based on:
-- User preference
+- User preference (configured in Settings)
 - API key availability
 - Fallback logic
 ```
+
+### 4. **Template Pattern (HTML Export)**
+- Jinja2 templates in `src/templates/`
+- Self-contained HTML with embedded JSON
+- JavaScript widgets for interactivity
+- Re-importable via BeautifulSoup parsing
 
 ## Data Flow Examples
 
@@ -238,6 +259,15 @@ app_settings
 3. Use `RecipeService` to persist
 4. Update UI file filter in controller
 
+**Example: HTML import**
+```python
+def import_from_html(self, file_path: str) -> List[Recipe]:
+    soup = BeautifulSoup(html_content, 'html.parser')
+    json_script = soup.find('script', {'type': 'application/json'})
+    recipe_data = json.loads(json_script.string)
+    # Use RecipeService to create...
+```
+
 ### Adding New UI Features
 1. Add widgets to `MainWindow` or create new dialog
 2. Connect signals in `AppController.connect_signals()`
@@ -251,28 +281,34 @@ app_settings
 
 ## Configuration
 
-### Environment Variables (.env)
-```bash
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_API_KEY=AIza...
-HF_TOKEN=hf_...
+### User Settings (~/.probablytasty/settings.json)
+All configuration now done in-app via Settings → Preferences:
+
+```json
+{
+  "provider": "ollama",
+  "ollama_url": "http://localhost:11434",
+  "ollama_model": "granite4:3b",
+  "ollama_vision_model": "llava",
+  "ollama_context_length": 8192,
+  "openai_key": "",
+  "openai_model": "gpt-4o-mini",
+  "anthropic_key": "",
+  "anthropic_model": "claude-3-5-sonnet-20241022",
+  "google_key": "",
+  "google_model": "gemini-1.5-flash",
+  "theme": "dark",
+  "font_size": 12
+}
 ```
 
-### Application Settings (config.py)
-```python
-DATABASE_URL = "sqlite:///data/recipes.db"
-DEFAULT_UNIT_SYSTEM = "metric"  # or "imperial"
-DEFAULT_LLM_PROVIDER = "openai"  # or "anthropic", "google", "none"
+**No .env files needed** - all settings configured in UI
 
-LLM_CONFIG = {
-    "openai": {
-        "chat_model": "gpt-4o-mini",
-        "temperature": 0.7,
-        "max_tokens": 1000,
-    },
-    # ... other providers
-}
+### Application Constants (config.py)
+```python
+DATABASE_URL = "sqlite:///~/.probablytasty/data/recipes.db"
+SETTINGS_FILE = "~/.probablytasty/settings.json"
+DEFAULT_UNIT_SYSTEM = "metric"  # or "imperial"
 ```
 
 ## Testing Strategy
@@ -310,16 +346,34 @@ LLM_CONFIG = {
 ## Security
 
 ### API Keys
-- Stored in `.env` (gitignored)
-- Never logged or displayed
-- Could use system keyring (future)
+- Stored in `~/.probablytasty/settings.json` (user-only permissions)
+- Never logged or displayed in plain text
+- Configured in-app via Settings dialog
+- No .env files or environment variables needed
 
 ### Data Privacy
-- All data stored locally
+- All data stored locally in user's home directory
 - No telemetry or analytics
 - User controls when data is sent to LLMs
+- Ollama option for 100% local processing
 
 ### Input Validation
 - Recipe editor validates required fields
 - SQL injection prevented by SQLAlchemy
 - File paths validated in import/export
+- HTML exports sanitized (embedded JSON only)
+
+## Deployment
+
+### Standalone Executables
+- **PyInstaller** bundles Python + dependencies
+- **Inno Setup** (Windows) creates professional installer
+- **dpkg** (Linux) creates .deb packages
+- See `BUILD.md` for complete instructions
+
+### Distribution
+```
+Windows: ProbablyTasty-Setup-1.0.0.exe
+Linux:   probablytasty_1.0.0_amd64.deb
+Portable: dist/ProbablyTasty/ folder (cross-platform)
+```

@@ -290,6 +290,17 @@ class ImportImageDialog(QDialog):
         image_section.addLayout(image_list_layout)
         layout.addLayout(image_section)
         
+        # Extract button (above preview)
+        extract_layout = QHBoxLayout()
+        extract_layout.addStretch()
+        
+        self.extract_btn = QPushButton("Extract Recipe")
+        self.extract_btn.clicked.connect(self._extract_recipe)
+        self.extract_btn.setEnabled(False)
+        extract_layout.addWidget(self.extract_btn)
+        
+        layout.addLayout(extract_layout)
+        
         # Progress bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setTextVisible(True)
@@ -306,10 +317,11 @@ class ImportImageDialog(QDialog):
         
         # Extracted text preview
         preview_layout = QVBoxLayout()
-        preview_label = QLabel("Extracted Recipe (editable):")
+        preview_label = QLabel("Extracted Recipe (preview):")
         preview_layout.addWidget(preview_label)
         
         self.preview_text = QTextEdit()
+        self.preview_text.setReadOnly(True)
         self.preview_text.setPlaceholderText("Extracted recipe will appear here after processing...")
         preview_layout.addWidget(self.preview_text)
         
@@ -320,14 +332,9 @@ class ImportImageDialog(QDialog):
         
         layout.addWidget(splitter)
         
-        # Buttons
+        # Bottom buttons
         button_layout = QHBoxLayout()
         button_layout.addStretch()
-        
-        self.extract_btn = QPushButton("Extract Recipe")
-        self.extract_btn.clicked.connect(self._extract_recipe)
-        self.extract_btn.setEnabled(False)
-        button_layout.addWidget(self.extract_btn)
         
         self.import_btn = QPushButton("Import to Database")
         self.import_btn.clicked.connect(self._import_recipe)
@@ -507,13 +514,8 @@ class ImportImageDialog(QDialog):
         from PySide6.QtCore import QCoreApplication
         QCoreApplication.processEvents()
         
-        # Update extracted data with any manual edits
-        self.extracted_data['raw_text'] = self.preview_text.toPlainText()
-        
-        # Emit signal with extracted data
+        # Emit signal with extracted data (don't close yet - wait for controller to finish)
         self.recipe_extracted.emit(self.extracted_data)
-        
-        self.accept()
     
     def closeEvent(self, event):
         """Handle dialog close."""

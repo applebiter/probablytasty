@@ -469,14 +469,51 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                     print("(empty! using original)", end=" ", flush=True)
                     remaining = line
                 
-                # Step 4: Check if there's preparation (after comma)
+                # Step 4: Check if there's preparation (after dash or certain comma patterns)
                 print("    [4/4] Extracting preparation...", end=" ")
                 preparation = ""
-                if remaining and "," in remaining:
-                    parts = remaining.split(",", 1)
-                    name = parts[0].strip() if parts[0] else line
-                    preparation = parts[1].strip() if len(parts) > 1 and parts[1] else ""
-                    print(f"✓ name='{name[:30]}...', prep='{preparation[:20]}...'")
+                name = remaining
+                
+                # Look for common preparation separators
+                # Use dash (-) as primary separator, or comma followed by prep verbs
+                if remaining:
+                    # Check for dash separator (most reliable)
+                    if ' - ' in remaining or ' – ' in remaining:
+                        parts = remaining.split(' - ' if ' - ' in remaining else ' – ', 1)
+                        name = parts[0].strip()
+                        preparation = parts[1].strip() if len(parts) > 1 else ""
+                        print(f"✓ (dash sep) name='{name[:30]}...', prep='{preparation[:20]}...'")
+                    # Check for comma followed by preparation verbs/words
+                    elif ',' in remaining:
+                        # Preparation indicators after comma
+                        prep_indicators = ['cut ', 'sliced', 'diced', 'chopped', 'minced', 'peeled', 
+                                          'seeded', 'cored', 'halved', 'quartered', 'crushed',
+                                          'beaten', 'thawed', 'softened', 'melted', 'divided',
+                                          'drained', 'rinsed', 'trimmed', 'removed', 'as needed',
+                                          'or more', 'or less', 'to taste', 'optional', 'for ']
+                        
+                        # Split on comma and check each part
+                        parts = remaining.split(',')
+                        name_parts = []
+                        prep_parts = []
+                        found_prep = False
+                        
+                        for part in parts:
+                            part_lower = part.strip().lower()
+                            # Check if this part looks like a preparation instruction
+                            is_prep = found_prep or any(indicator in part_lower for indicator in prep_indicators)
+                            
+                            if is_prep:
+                                found_prep = True
+                                prep_parts.append(part.strip())
+                            else:
+                                name_parts.append(part.strip())
+                        
+                        name = ', '.join(name_parts) if name_parts else remaining
+                        preparation = ', '.join(prep_parts) if prep_parts else ""
+                        print(f"✓ (smart comma) name='{name[:30]}...', prep='{preparation[:20]}...'")
+                    else:
+                        print(f"✓ name='{name[:40]}...'")
                 else:
                     name = remaining.strip() if remaining else line
                     print(f"✓ name='{name[:40]}...'")
