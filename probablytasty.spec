@@ -6,16 +6,20 @@ Builds standalone executable for Windows and Linux
 
 block_cipher = None
 
+import os
+
+spec_root = os.path.abspath(SPECPATH)
+
 a = Analysis(
     ['src/main.py'],
-    pathex=[],
+    pathex=[spec_root],
     binaries=[],
     datas=[
-        ('src/ui/themes/dark.qss', 'src/ui/themes'),
-        ('src/ui/themes/light.qss', 'src/ui/themes'),
-        ('src/templates/recipe.html', 'src/templates'),
-        ('icons/probablytasty.png', 'icons'),
-        ('icons/hicolor', 'icons/hicolor'),
+        (os.path.join(spec_root, 'src/ui/themes/dark.qss'), 'src/ui/themes'),
+        (os.path.join(spec_root, 'src/ui/themes/light.qss'), 'src/ui/themes'),
+        (os.path.join(spec_root, 'src/templates/recipe.html'), 'src/templates'),
+        (os.path.join(spec_root, 'icons/probablytasty.png'), 'icons'),
+        (os.path.join(spec_root, 'icons/hicolor'), 'icons/hicolor'),
     ],
     hiddenimports=[
         'sqlalchemy.dialects.sqlite',
