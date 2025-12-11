@@ -1,0 +1,6 @@
+# This directory will contain your exported HTML recipes
+# 
+# To publish recipes:
+# 1. Export recipes from ProbablyTasty app as HTML
+# 2. Upload them to this directory via FTP/SFTP
+# 3. They will automatically appear on your website

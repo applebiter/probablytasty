@@ -11,9 +11,10 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('src/ui/themes/*.qss', 'src/ui/themes'),
-        ('src/templates/*.html', 'src/templates'),
-        ('icons/*.png', 'icons'),
+        ('src/ui/themes/dark.qss', 'src/ui/themes'),
+        ('src/ui/themes/light.qss', 'src/ui/themes'),
+        ('src/templates/recipe.html', 'src/templates'),
+        ('icons/probablytasty.png', 'icons'),
         ('icons/hicolor', 'icons/hicolor'),
     ],
     hiddenimports=[
