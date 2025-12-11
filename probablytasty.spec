@@ -4,22 +4,23 @@ PyInstaller spec file for ProbablyTasty
 Builds standalone executable for Windows and Linux
 """
 
-block_cipher = None
-
 import os
 
-spec_root = os.path.abspath(SPECPATH)
+block_cipher = None
+
+# Get the directory where this spec file is located
+spec_root = os.path.dirname(os.path.abspath(SPEC))
 
 a = Analysis(
-    ['src/main.py'],
+    [os.path.join(spec_root, 'src/main.py')],
     pathex=[spec_root],
     binaries=[],
     datas=[
-        (os.path.join(spec_root, 'src/ui/themes/dark.qss'), 'src/ui/themes'),
-        (os.path.join(spec_root, 'src/ui/themes/light.qss'), 'src/ui/themes'),
-        (os.path.join(spec_root, 'src/templates/recipe.html'), 'src/templates'),
-        (os.path.join(spec_root, 'icons/probablytasty.png'), 'icons'),
-        (os.path.join(spec_root, 'icons/hicolor'), 'icons/hicolor'),
+        (os.path.join(spec_root, 'src', 'ui', 'themes', 'dark.qss'), os.path.join('src', 'ui', 'themes')),
+        (os.path.join(spec_root, 'src', 'ui', 'themes', 'light.qss'), os.path.join('src', 'ui', 'themes')),
+        (os.path.join(spec_root, 'src', 'templates', 'recipe.html'), os.path.join('src', 'templates')),
+        (os.path.join(spec_root, 'icons', 'probablytasty.png'), 'icons'),
+        (os.path.join(spec_root, 'icons', 'hicolor'), os.path.join('icons', 'hicolor')),
     ],
     hiddenimports=[
         'sqlalchemy.dialects.sqlite',
