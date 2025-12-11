@@ -12,7 +12,6 @@ block_cipher = None
 # Collect data files using Tree for directory recursion
 # Use os.path.join for cross-platform compatibility
 themes_tree = Tree(os.path.join('src', 'ui', 'themes'), prefix=os.path.join('src', 'ui', 'themes'), excludes=['*.pyc', '__pycache__'])
-templates_tree = Tree(os.path.join('src', 'templates'), prefix=os.path.join('src', 'templates'), excludes=['*.pyc', '__pycache__'])
 icons_tree = Tree('icons', prefix='icons', excludes=['*.pyc', '__pycache__'])
 
 a = Analysis(
@@ -55,7 +54,6 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     themes_tree,
-    templates_tree,
     icons_tree,
     [],
     exclude_binaries=True,
