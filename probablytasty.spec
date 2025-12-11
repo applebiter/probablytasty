@@ -4,23 +4,19 @@ PyInstaller spec file for ProbablyTasty
 Builds standalone executable for Windows and Linux
 """
 
+from PyInstaller.utils.hooks import collect_data_files
 import os
 
 block_cipher = None
 
-# Get the directory where this spec file is located
-spec_root = os.path.dirname(os.path.abspath(SPEC))
-
 a = Analysis(
-    [os.path.join(spec_root, 'src/main.py')],
-    pathex=[spec_root],
+    ['src/main.py'],
+    pathex=[],
     binaries=[],
     datas=[
-        (os.path.join(spec_root, 'src', 'ui', 'themes', 'dark.qss'), os.path.join('src', 'ui', 'themes')),
-        (os.path.join(spec_root, 'src', 'ui', 'themes', 'light.qss'), os.path.join('src', 'ui', 'themes')),
-        (os.path.join(spec_root, 'src', 'templates', 'recipe.html'), os.path.join('src', 'templates')),
-        (os.path.join(spec_root, 'icons', 'probablytasty.png'), 'icons'),
-        (os.path.join(spec_root, 'icons', 'hicolor'), os.path.join('icons', 'hicolor')),
+        ('src/ui/themes', 'src/ui/themes'),
+        ('src/templates', 'src/templates'),
+        ('icons', 'icons'),
     ],
     hiddenimports=[
         'sqlalchemy.dialects.sqlite',
