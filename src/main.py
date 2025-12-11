@@ -31,7 +31,13 @@ def load_settings():
 
 def load_theme_stylesheet(theme: str) -> str:
     """Load theme stylesheet."""
-    theme_file = Path(__file__).parent / "ui" / "themes" / f"{theme}.qss"
+    # PyInstaller compatibility
+    if getattr(sys, 'frozen', False):
+        base_path = Path(sys._MEIPASS)
+        theme_file = base_path / "src" / "ui" / "themes" / f"{theme}.qss"
+    else:
+        theme_file = Path(__file__).parent / "ui" / "themes" / f"{theme}.qss"
+    
     try:
         if theme_file.exists():
             with open(theme_file, 'r') as f:

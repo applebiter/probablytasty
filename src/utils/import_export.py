@@ -3,6 +3,7 @@ Import/export utilities for recipes.
 """
 
 import json
+import sys
 from typing import List, Dict, Any
 from pathlib import Path
 from sqlalchemy.orm import Session
@@ -365,7 +366,15 @@ class RecipeExporter:
         }
         
         # Load template
-        template_path = Path(__file__).parent.parent / "templates" / "recipe.html"
+        # PyInstaller compatibility: check if running as bundled exe
+        if getattr(sys, 'frozen', False):
+            # Running as compiled executable
+            base_path = Path(sys._MEIPASS)
+        else:
+            # Running as script
+            base_path = Path(__file__).parent.parent
+        
+        template_path = base_path / "src" / "templates" / "recipe.html"
         with open(template_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
         

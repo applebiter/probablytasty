@@ -443,8 +443,15 @@ class SettingsDialog(QDialog):
         """Apply theme immediately to the application."""
         from PySide6.QtWidgets import QApplication
         from pathlib import Path
+        import sys
         
-        theme_file = Path(__file__).parent / "themes" / f"{theme}.qss"
+        # PyInstaller compatibility
+        if getattr(sys, 'frozen', False):
+            base_path = Path(sys._MEIPASS)
+            theme_file = base_path / "src" / "ui" / "themes" / f"{theme}.qss"
+        else:
+            theme_file = Path(__file__).parent / "themes" / f"{theme}.qss"
+        
         print(f"DEBUG: Applying theme '{theme}' from {theme_file}")
         print(f"DEBUG: Theme file exists: {theme_file.exists()}")
         try:
