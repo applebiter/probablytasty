@@ -5,19 +5,19 @@ Builds standalone executable for Windows and Linux
 """
 
 from PyInstaller.utils.hooks import collect_data_files
-import os
 
 block_cipher = None
+
+# Collect data files using Tree for directory recursion
+themes_tree = Tree('./src/ui/themes', prefix='src/ui/themes', excludes=['*.pyc', '__pycache__'])
+templates_tree = Tree('./src/templates', prefix='src/templates', excludes=['*.pyc', '__pycache__'])
+icons_tree = Tree('./icons', prefix='icons', excludes=['*.pyc', '__pycache__'])
 
 a = Analysis(
     ['src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('src/ui/themes', 'src/ui/themes'),
-        ('src/templates', 'src/templates'),
-        ('icons', 'icons'),
-    ],
+    datas=[],
     hiddenimports=[
         'sqlalchemy.dialects.sqlite',
         'pydantic',
@@ -49,6 +49,12 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    themes_tree,
+    templates_tree,
+    icons_tree,
     [],
     exclude_binaries=True,
     name='ProbablyTasty',
