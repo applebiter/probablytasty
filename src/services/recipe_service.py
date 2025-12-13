@@ -149,14 +149,21 @@ class RecipeService:
             self.session.flush()
         
         # Create recipe ingredient
-        # Convert quantity to string if it's a number
-        qty_str = str(quantity) if not isinstance(quantity, str) else quantity
+        # Handle quantity - convert to float if possible, otherwise 0
+        try:
+            qty_float = float(quantity) if quantity else 0.0
+        except (ValueError, TypeError):
+            # If it's a fraction like "1/2" or range like "4-6", store 0 and use display_quantity
+            qty_float = 0.0
+        
+        # Convert display quantities to strings
+        qty_str = str(quantity) if quantity else ""
         display_qty_str = str(display_quantity) if display_quantity and not isinstance(display_quantity, str) else (display_quantity or qty_str)
         
         recipe_ingredient = RecipeIngredient(
             recipe_id=recipe_id,
             ingredient_id=ingredient.id,
-            quantity=qty_str,
+            quantity=qty_float,
             unit=unit,
             display_quantity=display_qty_str,
             display_unit=display_unit or unit,

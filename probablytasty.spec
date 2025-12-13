@@ -14,40 +14,20 @@ block_cipher = None
 themes_tree = Tree(os.path.join('src', 'ui', 'themes'), prefix=os.path.join('src', 'ui', 'themes'), excludes=['*.pyc', '__pycache__'])
 icons_tree = Tree('icons', prefix='icons', excludes=['*.pyc', '__pycache__'])
 
+# Collect data files for packages that need them
+mf2py_datas = collect_data_files('mf2py')
+extruct_datas = collect_data_files('extruct')
+
 a = Analysis(
     ['src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=mf2py_datas + extruct_datas,
     hiddenimports=[
-        # SQLAlchemy
         'sqlalchemy.dialects.sqlite',
         'sqlalchemy.orm',
-        'sqlalchemy.ext.declarative',
-        # Core src modules
-        'src',
         'src.models',
         'src.models.database',
-        'src.models.recipe',
-        'src.models.ingredient',
-        'src.models.tag',
-        'src.services',
-        'src.services.recipe_service',
-        'src.services.ingredient_service',
-        'src.services.tag_service',
-        'src.services.llm_service',
-        'src.services.shopping_list_service',
-        'src.ui',
-        'src.ui.main_window',
-        'src.ui.recipe_dialog',
-        'src.ui.settings_dialog',
-        'src.ui.shopping_list_dialog',
-        'src.utils',
-        'src.utils.import_export',
-        'src.utils.llm_helpers',
-        'src.controller',
-        'src.config',
-        # External dependencies
         'pydantic',
         'recipe_scrapers',
         'bs4',
