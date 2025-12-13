@@ -81,8 +81,9 @@ exe = EXE(
 coll = COLLECT(
     exe,
     a.binaries,
-    a.zipfiles,
     a.datas,
+    themes_tree,
+    icons_tree,
     strip=False,
     upx=True,
     upx_exclude=[],
