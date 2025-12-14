@@ -264,6 +264,11 @@ class MainWindow(QMainWindow):
         # Help menu
         help_menu = menubar.addMenu("❓ Help")
         
+        user_guide_action = help_menu.addAction("📖 User Guide")
+        user_guide_action.triggered.connect(self.on_user_guide)
+        
+        help_menu.addSeparator()
+        
         about_action = help_menu.addAction("ℹ️ About")
         about_action.triggered.connect(self.on_about)
     
@@ -534,3 +539,47 @@ class MainWindow(QMainWindow):
             "<p>Built with PySide6 and Python</p>"
             "<p style='margin-top: 10px;'><i>Made by applebiter for his mother.</i></p>"
         )
+    
+    def on_user_guide(self):
+        """Open the user guide in the default viewer."""
+        import sys
+        import os
+        import subprocess
+        from pathlib import Path
+        
+        # Find the USER_GUIDE.md file
+        if getattr(sys, 'frozen', False):
+            # Running as compiled executable
+            base_path = Path(sys._MEIPASS)
+        else:
+            # Running as script
+            base_path = Path(__file__).parent.parent.parent
+        
+        guide_path = base_path / "USER_GUIDE.md"
+        
+        if not guide_path.exists():
+            QMessageBox.warning(
+                self,
+                "User Guide Not Found",
+                f"Could not find USER_GUIDE.md at:\n{guide_path}\n\n"
+                "Please check the installation."
+            )
+            return
+        
+        # Open the file with the default application
+        try:
+            if sys.platform == 'win32':
+                os.startfile(str(guide_path))
+            elif sys.platform == 'darwin':  # macOS
+                subprocess.run(['open', str(guide_path)])
+            else:  # Linux and other Unix-like
+                subprocess.run(['xdg-open', str(guide_path)])
+        except Exception as e:
+            # Fallback: show path in a message box
+            QMessageBox.information(
+                self,
+                "User Guide Location",
+                f"User guide is located at:\n\n{guide_path}\n\n"
+                f"Please open it with your preferred text editor or Markdown viewer.\n\n"
+                f"Error opening automatically: {e}"
+            )

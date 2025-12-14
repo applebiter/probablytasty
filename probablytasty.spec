@@ -19,11 +19,17 @@ templates_tree = Tree(os.path.join('src', 'templates'), prefix=os.path.join('src
 mf2py_datas = collect_data_files('mf2py')
 extruct_datas = collect_data_files('extruct')
 
+# Include documentation files
+doc_datas = [
+    ('USER_GUIDE.md', '.'),
+    ('README.md', '.'),
+]
+
 a = Analysis(
     ['src/main.py'],
     pathex=[],
     binaries=[],
-    datas=mf2py_datas + extruct_datas,
+    datas=mf2py_datas + extruct_datas + doc_datas,
     hiddenimports=[
         'sqlalchemy.dialects.sqlite',
         'sqlalchemy.orm',
