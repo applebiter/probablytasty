@@ -343,6 +343,19 @@ class RecipeExporter:
             raise ImportError("Jinja2 is required for HTML export. Install with: pip install jinja2")
         
         # Prepare recipe data
+        def get_numeric_quantity(ri):
+            """Extract numeric quantity, handling LLM errors gracefully."""
+            # First try the numeric quantity field
+            if ri.quantity is not None and ri.quantity > 0:
+                return ri.quantity
+            # Fall back to parsing display_quantity
+            try:
+                # Try direct float conversion
+                return float(ri.display_quantity) if ri.display_quantity else 1.0
+            except (ValueError, TypeError):
+                # If display_quantity contains non-numeric text (LLM error), default to 1
+                return 1.0
+        
         recipe_data = {
             "title": recipe.title,
             "description": recipe.description,
@@ -355,7 +368,7 @@ class RecipeExporter:
             "ingredients": [
                 {
                     "name": ri.ingredient.name,
-                    "quantity": float(ri.display_quantity) if ri.display_quantity else 0,
+                    "quantity": get_numeric_quantity(ri),
                     "unit": ri.display_unit or "",
                     "preparation": ri.preparation or "",
                 }
