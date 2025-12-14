@@ -47,6 +47,20 @@
 - All features now fully functional in compiled executables
 - HTML export tested and working with template properly bundled
 
+## Known Limitations & Future Improvements
+
+### AI Model Configuration
+The app currently assumes specific Ollama models (`granite4:3b` and `ministral-3:3b`) for optimal performance. Testing shows:
+- **3B models perform best**: Smaller 3B parameter models warm up faster and provide better results for recipe parsing
+- **Larger models are slower**: 7B+ models take longer to load and may not perform as well for this use case
+- **Model availability**: The app cannot guarantee an Ollama connection or that the expected models are installed
+
+**Planned improvements:**
+- Automatic model detection and fallback options
+- User-configurable model selection in settings
+- Better handling when Ollama is unavailable (graceful degradation)
+- Bundled lightweight model option for offline use
+
 ## Full Changelog
 - Restored HTML recipe export template (24KB with JavaScript interactivity)
 - Fixed PyInstaller spec to include templates and documentation
