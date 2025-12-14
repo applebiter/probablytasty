@@ -71,7 +71,7 @@ exe = EXE(
     icons_tree,
     templates_tree,
     [],
-    exclude_binaries=True,
+    exclude_binaries=False,  # Changed to False for onefile mode
     name='ProbablyTasty',
     debug=False,
     bootloader_ignore_signals=False,
@@ -84,17 +84,4 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon='icons/applebiter.png',
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    themes_tree,
-    icons_tree,
-    templates_tree,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='ProbablyTasty',
 )
