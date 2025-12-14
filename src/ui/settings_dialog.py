@@ -452,23 +452,15 @@ class SettingsDialog(QDialog):
         else:
             theme_file = Path(__file__).parent / "themes" / f"{theme}.qss"
         
-        print(f"DEBUG: Applying theme '{theme}' from {theme_file}")
-        print(f"DEBUG: Theme file exists: {theme_file.exists()}")
         try:
             if theme_file.exists():
                 with open(theme_file, 'r') as f:
                     stylesheet = f.read()
                     app = QApplication.instance()
                     if app:
-                        print(f"DEBUG: Applying stylesheet ({len(stylesheet)} chars)")
                         app.setStyleSheet(stylesheet)
-                        print("DEBUG: Theme applied successfully")
-                    else:
-                        print("DEBUG: No QApplication instance found")
-            else:
-                print(f"DEBUG: Theme file not found: {theme_file}")
         except Exception as e:
-            print(f"Failed to apply theme {theme}: {e}")
+            pass  # Silently fail on theme error
     
     def load_values(self):
         """Load settings values into UI."""

@@ -59,10 +59,8 @@ class OpenAIClient(LLMClient):
             try:
                 from openai import OpenAI
                 self._client = OpenAI(api_key=api_key)
-            except ImportError:
-                print("Warning: OpenAI package not installed")
-            except Exception as e:
-                print(f"Warning: Failed to initialize OpenAI client: {e}")
+            except (ImportError, Exception):
+                pass  # OpenAI client initialization handled gracefully
     
     def chat(
         self,
@@ -103,10 +101,8 @@ class AnthropicClient(LLMClient):
             try:
                 from anthropic import Anthropic
                 self._client = Anthropic(api_key=api_key)
-            except ImportError:
-                print("Warning: Anthropic package not installed")
-            except Exception as e:
-                print(f"Warning: Failed to initialize Anthropic client: {e}")
+            except (ImportError, Exception):
+                pass
     
     def chat(
         self,
@@ -153,10 +149,8 @@ class GoogleClient(LLMClient):
                 import google.generativeai as genai
                 genai.configure(api_key=api_key)
                 self._client = genai.GenerativeModel(model)
-            except ImportError:
-                print("Warning: Google Generative AI package not installed")
-            except Exception as e:
-                print(f"Warning: Failed to initialize Google client: {e}")
+            except (ImportError, Exception):
+                pass  # Google client initialization handled gracefully
     
     def chat(
         self,
@@ -294,13 +288,11 @@ class LLMRouter:
         if self.preferred_provider != LLMProvider.NONE:
             client = self.clients.get(self.preferred_provider)
             if client and client.is_available():
-                print(f"Using LLM provider: {self.preferred_provider.value}")
                 return client
         
         # Fall back to any available provider
         for provider, client in self.clients.items():
             if provider != LLMProvider.NONE and client and client.is_available():
-                print(f"Falling back to LLM provider: {provider.value}")
                 return client
         
         return None
@@ -324,9 +316,8 @@ class LLMRouter:
         
         try:
             return client.chat(messages, system_prompt, temperature, max_tokens)
-        except Exception as e:
-            print(f"Error during LLM chat: {e}")
-            return None
+        except Exception:
+            return None  # Silently return None on error
     
     def is_available(self) -> bool:
         """Check if any LLM client is available."""

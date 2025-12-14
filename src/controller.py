@@ -74,8 +74,6 @@ class AppController:
         # Update dependent services
         self.search_orchestrator.llm_router = self.llm_router
         self.url_importer.llm_router = self.llm_router
-        
-        print(f"Settings reloaded: Provider={config.DEFAULT_LLM_PROVIDER}, Ollama model={config.OLLAMA_MODEL}")
     
     def connect_signals(self):
         """Connect UI signals to controller methods."""
@@ -248,7 +246,6 @@ class AppController:
                     
                     # Add ingredients
                     for idx, ing in enumerate(recipe_data["ingredients"]):
-                        print(f"  [DB] Saving ingredient #{idx+1}: name='{ing['name'][:30]}...', qty='{ing['quantity']}', unit='{ing['unit']}'")
                         self.recipe_service.add_ingredient_to_recipe(
                             recipe_id=recipe.id,
                             ingredient_name=ing["name"],
@@ -546,12 +543,6 @@ class AppController:
             import traceback
             error_details = traceback.format_exc()
             
-            # Print to console for debugging
-            print("=" * 70)
-            print("IMAGE IMPORT ERROR:")
-            print(error_details)
-            print("=" * 70)
-            
             # Create a scrollable, copyable error dialog
             from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QPushButton
             
@@ -769,7 +760,6 @@ class AppController:
                         )
         
         except Exception as e:
-            print(f"Error scaling recipe: {e}")
             import traceback
             traceback.print_exc()
             QMessageBox.critical(
@@ -854,7 +844,6 @@ class AppController:
                 document.print_(printer)
                 
         except Exception as e:
-            print(f"Error printing recipe: {e}")
             import traceback
             traceback.print_exc()
             QMessageBox.critical(
@@ -887,7 +876,6 @@ class AppController:
             dialog.exec()
             
         except Exception as e:
-            print(f"Error opening shopping list dialog: {e}")
             import traceback
             traceback.print_exc()
             QMessageBox.critical(
@@ -902,7 +890,6 @@ class AppController:
             dialog = UnitConversionDialog(self.unit_conversion_service, self.window)
             dialog.exec()
         except Exception as e:
-            print(f"Error opening unit conversion dialog: {e}")
             import traceback
             traceback.print_exc()
             QMessageBox.critical(

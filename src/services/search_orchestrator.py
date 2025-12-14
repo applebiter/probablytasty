@@ -92,13 +92,8 @@ Output: {"tags_include": ["dessert"], "required_ingredients": ["chocolate"]}"""
             filters = json.loads(response)
             return filters
             
-        except json.JSONDecodeError as e:
-            print(f"Failed to parse LLM response as JSON: {e}")
-            print(f"Response was: {response}")
-            return None
-        except Exception as e:
-            print(f"Error interpreting query with LLM: {e}")
-            return None
+        except (json.JSONDecodeError, Exception):
+            return None  # Silently fail and return None
     
     def _search_with_filters(
         self,

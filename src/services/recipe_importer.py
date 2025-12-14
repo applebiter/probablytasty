@@ -37,15 +37,15 @@ class RecipeImporter:
             recipe = self._scrape_with_library(url)
             if recipe:
                 return recipe
-        except Exception as e:
-            print(f"Recipe scraper failed: {e}")
+        except Exception:
+            pass  # Silently continue to LLM fallback
         
         # Fallback to LLM parsing if available
         if self.llm_router:
             try:
                 return self._parse_with_llm(url)
-            except Exception as e:
-                print(f"LLM parsing failed: {e}")
+            except Exception:
+                pass  # Silently fail
         
         return None
     
@@ -185,7 +185,7 @@ Return ONLY the JSON, no other text."""
                 
                 return recipe_data
         except json.JSONDecodeError:
-            print("Failed to parse LLM response as JSON")
+            pass  # Silently fail on JSON parse error
         
         return None
     
@@ -201,10 +201,7 @@ Return ONLY the JSON, no other text."""
         Returns:
             List of parsed ingredient dicts
         """
-        print(f"\n🔄 Two-pass parsing {len(raw_ingredients)} ingredients...")
-        
         # Pass 1: Normalize all ingredients at once
-        print("  [Pass 1] Normalizing ingredient formats...")
         ingredient_list = "\n".join(f"{i+1}. {ing}" for i, ing in enumerate(raw_ingredients))
         
         try:
@@ -233,7 +230,6 @@ Return ONLY the normalized list, one per line, numbered:'''}],
             )
             
             if not normalized_response:
-                print("  ✗ Normalization failed, falling back to individual parsing")
                 return [self.parse_ingredient_line(ing) for ing in raw_ingredients]
             
             # Parse normalized lines
@@ -242,14 +238,10 @@ Return ONLY the normalized list, one per line, numbered:'''}],
             import re
             normalized_lines = [re.sub(r'^\d+\.\s*', '', line) for line in normalized_lines]
             
-            print(f"  ✓ Normalized {len(normalized_lines)} ingredients")
-            
         except Exception as e:
-            print(f"  ✗ Normalization error: {e}")
             return [self.parse_ingredient_line(ing) for ing in raw_ingredients]
         
         # Pass 2: Extract structured data from normalized format
-        print("  [Pass 2] Extracting structured data...")
         ingredients = []
         
         for i, line in enumerate(normalized_lines):
@@ -301,11 +293,9 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                         })
                     else:
                         # Fallback - use original
-                        print(f"  ⚠️  Could not parse normalized: {line[:50]}...")
                         ingredients.append(self.parse_ingredient_line(raw_ingredients[i] if i < len(raw_ingredients) else line))
                         
             except Exception as e:
-                print(f"  ✗ Error parsing line {i+1}: {e}")
                 ingredients.append({
                     "quantity": "1",
                     "unit": "",
@@ -313,7 +303,6 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                     "preparation": ""
                 })
         
-        print(f"  ✓ Extracted {len(ingredients)} ingredients\n")
         return ingredients
     
     def parse_ingredient_line(self, line: str) -> Dict:
@@ -361,10 +350,7 @@ Return ONLY the normalized list, one per line, numbered:'''}],
         # If regex fails and LLM available, try multi-step parsing
         if self.llm_router:
             try:
-                print(f"  Parsing ingredient (4 steps): {line[:50]}...")
-                
                 # Step 1: Extract quantity with clear examples
-                print("    [1/4] Extracting quantity...", end=" ", flush=True)
                 quantity = "1"
                 try:
                     step1 = self.llm_router.chat(
@@ -379,8 +365,7 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                         temperature=0.0,
                         max_tokens=10
                     )
-                except Exception as e:
-                    print(f"✗ timeout/error: {e}")
+                except Exception:
                     step1 = None
                 if step1:
                     # Extract only digits, slashes, hyphens, and periods
@@ -391,16 +376,8 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                         # Validate it's actually a number-like thing
                         if not any(word in extracted.lower() for word in ['cup', 'tablespoon', 'teaspoon', 'ounce', 'pound', 'gram', 'clove']):
                             quantity = extracted
-                            print(f"✓ {quantity}")
-                        else:
-                            print(f"✗ got unit instead: '{extracted}', using default: 1")
-                    else:
-                        print("✓ (default: 1)")
-                else:
-                    print("✗ (using default: 1)")
                 
                 # Step 2: Extract unit with clear examples
-                print("    [2/4] Extracting unit...", end=" ", flush=True)
                 unit = ""
                 try:
                     step2 = self.llm_router.chat(
@@ -416,8 +393,7 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                         temperature=0.0,
                         max_tokens=10
                     )
-                except Exception as e:
-                    print(f"✗ timeout/error: {e}")
+                except Exception:
                     step2 = None
                 if step2 and step2.lower().strip() != "none":
                     # Validate it's a unit word, not a number
@@ -432,33 +408,22 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                         for word in words:
                             if word in common_units:
                                 unit = word
-                                print(f"✓ {unit}")
                                 break
-                        if not unit:
-                            print(f"✗ unrecognized unit: '{step2.strip()}'")
-                    else:
-                        print(f"✗ got number instead: '{step2.strip()}'")
-                else:
-                    print("✓ (none)")
                 
                 # Step 3: What's left is the ingredient name
-                print("    [3/4] Extracting ingredient name...", end=" ", flush=True)
                 # Remove quantity and unit from the line
                 import re
                 remaining = line
-                print(f"(start: '{remaining[:40]}')", end=" ", flush=True)
                 
-                # Remove ALL leading numbers first (handles partial LLM extractions like "0.6666666" when actual is "0.66666668653488")
+                # Remove ALL leading numbers first
                 # Also remove parenthetical fractions like (1/2 pound)
                 remaining = re.sub(r'^\s*[\d\.\/\-]+\s*', '', remaining).strip()
-                remaining = re.sub(r'^\s*\([^\)]*\)\s*', '', remaining).strip()  # Remove (1/2 pound) etc
-                print(f"(after qty: '{remaining[:40]}')", end=" ", flush=True)
+                remaining = re.sub(r'^\s*\([^\)]*\)\s*', '', remaining).strip()
                 
                 # Remove unit at start (with optional 's' for plurals)
                 if unit:
                     unit_re = re.escape(unit) + r's?'  # Match singular or plural
                     remaining = re.sub(rf'^\s*{unit_re}\s+', '', remaining, flags=re.IGNORECASE).strip()
-                    print(f"(after unit: '{remaining[:40]}')", end=" ", flush=True)
                 
                 # Remove packaging/container words
                 packaging_words = ['can', 'jar', 'package', 'box', 'bottle', 'container']
@@ -466,23 +431,19 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                     remaining = re.sub(rf'^\s*{word}s?\s+', '', remaining, flags=re.IGNORECASE).strip()
                 
                 if not remaining:  # Safety check
-                    print("(empty! using original)", end=" ", flush=True)
                     remaining = line
                 
-                # Step 4: Check if there's preparation (after dash or certain comma patterns)
-                print("    [4/4] Extracting preparation...", end=" ")
+                # Step 4: Check if there's preparation
                 preparation = ""
                 name = remaining
                 
                 # Look for common preparation separators
-                # Use dash (-) as primary separator, or comma followed by prep verbs
                 if remaining:
                     # Check for dash separator (most reliable)
                     if ' - ' in remaining or ' – ' in remaining:
                         parts = remaining.split(' - ' if ' - ' in remaining else ' – ', 1)
                         name = parts[0].strip()
                         preparation = parts[1].strip() if len(parts) > 1 else ""
-                        print(f"✓ (dash sep) name='{name[:30]}...', prep='{preparation[:20]}...'")
                     # Check for comma followed by preparation verbs/words
                     elif ',' in remaining:
                         # Preparation indicators after comma
@@ -511,12 +472,8 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                         
                         name = ', '.join(name_parts) if name_parts else remaining
                         preparation = ', '.join(prep_parts) if prep_parts else ""
-                        print(f"✓ (smart comma) name='{name[:30]}...', prep='{preparation[:20]}...'")
-                    else:
-                        print(f"✓ name='{name[:40]}...'")
                 else:
                     name = remaining.strip() if remaining else line
-                    print(f"✓ name='{name[:40]}...'")
                 
                 if name:  # Only return if we got something useful
                     result = {
@@ -525,11 +482,10 @@ Return ONLY the normalized list, one per line, numbered:'''}],
                         "name": name,
                         "preparation": preparation
                     }
-                    print(f"  ✓ Result: qty='{quantity}', unit='{unit}', name='{name[:30]}...'")
                     return result
                     
-            except Exception as e:
-                print(f"\n  ✗ LLM ingredient parsing failed: {e}")
+            except Exception:
+                pass  # Fall through to ultimate fallback
         
         # Ultimate fallback - put everything in name
         return {

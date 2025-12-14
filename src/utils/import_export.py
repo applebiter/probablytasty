@@ -96,8 +96,7 @@ class RecipeImporter:
                 imported_recipes.append(recipe)
                 
             except Exception as e:
-                print(f"Error importing recipe '{recipe_data.get('title', 'unknown')}': {e}")
-                continue
+                continue  # Skip failed recipe imports
         
         return imported_recipes
     

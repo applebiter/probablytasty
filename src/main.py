@@ -43,14 +43,13 @@ def load_theme_stylesheet(theme: str) -> str:
             with open(theme_file, 'r') as f:
                 return f.read()
     except Exception as e:
-        print(f"Failed to load theme {theme}: {e}")
+        pass  # Silently fail on theme load error
     return ""
 
 
 def main():
     """Main application function."""
     # Initialize database
-    print("Initializing database...")
     init_database()
     
     # Load settings
