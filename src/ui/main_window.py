@@ -541,11 +541,10 @@ class MainWindow(QMainWindow):
         )
     
     def on_user_guide(self):
-        """Open the user guide in the default viewer."""
+        """Open the user guide in a dialog window."""
         import sys
-        import os
-        import subprocess
         from pathlib import Path
+        from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QPushButton, QHBoxLayout
         
         # Find the USER_GUIDE.md file
         if getattr(sys, 'frozen', False):
@@ -566,20 +565,37 @@ class MainWindow(QMainWindow):
             )
             return
         
-        # Open the file with the default application
+        # Read the guide content
         try:
-            if sys.platform == 'win32':
-                os.startfile(str(guide_path))
-            elif sys.platform == 'darwin':  # macOS
-                subprocess.run(['open', str(guide_path)])
-            else:  # Linux and other Unix-like
-                subprocess.run(['xdg-open', str(guide_path)])
+            with open(guide_path, 'r', encoding='utf-8') as f:
+                guide_content = f.read()
         except Exception as e:
-            # Fallback: show path in a message box
-            QMessageBox.information(
+            QMessageBox.warning(
                 self,
-                "User Guide Location",
-                f"User guide is located at:\n\n{guide_path}\n\n"
-                f"Please open it with your preferred text editor or Markdown viewer.\n\n"
-                f"Error opening automatically: {e}"
+                "Error Reading Guide",
+                f"Could not read the user guide:\n{e}"
             )
+            return
+        
+        # Create a dialog to display the guide
+        dialog = QDialog(self)
+        dialog.setWindowTitle("📖 ProbablyTasty User Guide")
+        dialog.setMinimumSize(900, 700)
+        
+        layout = QVBoxLayout(dialog)
+        
+        # Text browser to display markdown (with basic formatting)
+        browser = QTextBrowser()
+        browser.setOpenExternalLinks(True)
+        browser.setMarkdown(guide_content)
+        layout.addWidget(browser)
+        
+        # Close button
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        close_button = QPushButton("Close")
+        close_button.clicked.connect(dialog.accept)
+        button_layout.addWidget(close_button)
+        layout.addLayout(button_layout)
+        
+        dialog.exec()
