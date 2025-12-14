@@ -587,70 +587,89 @@ class MainWindow(QMainWindow):
         # Text browser to display markdown (with basic formatting)
         browser = QTextBrowser()
         browser.setOpenExternalLinks(True)
-        browser.setMarkdown(guide_content)
         
-        # Add CSS styling for better spacing and readability
-        browser.document().setDefaultStyleSheet("""
-            body { 
+        # Convert markdown to HTML with custom styling
+        from PySide6.QtGui import QTextDocument
+        temp_doc = QTextDocument()
+        temp_doc.setMarkdown(guide_content)
+        html_content = temp_doc.toHtml()
+        
+        # Inject CSS styling into the HTML
+        styled_html = f"""
+        <html>
+        <head>
+        <style>
+            body {{ 
                 line-height: 1.6; 
                 font-size: 14px;
-            }
-            h1 { 
+                margin: 20px;
+            }}
+            h1 {{ 
                 margin-top: 24px; 
                 margin-bottom: 16px; 
                 font-size: 28px;
                 color: #0d7377;
-            }
-            h2 { 
+            }}
+            h2 {{ 
                 margin-top: 20px; 
                 margin-bottom: 12px; 
                 font-size: 22px;
                 color: #0d7377;
-            }
-            h3 { 
+            }}
+            h3 {{ 
                 margin-top: 16px; 
                 margin-bottom: 10px; 
                 font-size: 18px;
                 color: #0d7377;
-            }
-            p { 
+            }}
+            p {{ 
                 margin-top: 8px; 
                 margin-bottom: 12px; 
-            }
-            ul, ol { 
+            }}
+            ul, ol {{ 
                 margin-top: 8px; 
                 margin-bottom: 16px;
                 margin-left: 20px;
-            }
-            li { 
+            }}
+            li {{ 
                 margin-bottom: 6px; 
-            }
-            table { 
+            }}
+            table {{ 
                 margin-top: 16px; 
                 margin-bottom: 16px;
                 border-collapse: collapse;
-            }
-            th, td { 
+                width: 100%;
+            }}
+            th, td {{ 
                 padding: 8px 12px;
                 border: 1px solid #ccc;
-            }
-            th {
+                text-align: left;
+            }}
+            th {{
                 background-color: #0d7377;
                 color: white;
-            }
-            code {
+            }}
+            code {{
                 background-color: #f5f5f5;
                 padding: 2px 6px;
                 border-radius: 3px;
-            }
-            hr {
+                font-family: monospace;
+            }}
+            hr {{
                 margin-top: 20px;
                 margin-bottom: 20px;
                 border: none;
                 border-top: 2px solid #e0e0e0;
-            }
-        """)
+            }}
+        </style>
+        </head>
+        <body>
+        {html_content.split('<body>')[1] if '<body>' in html_content else html_content}
+        </body>
+        </html>
+        """
         
+        browser.setHtml(styled_html)
         layout.addWidget(browser)
         
         # Close button
