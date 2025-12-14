@@ -588,6 +588,69 @@ class MainWindow(QMainWindow):
         browser = QTextBrowser()
         browser.setOpenExternalLinks(True)
         browser.setMarkdown(guide_content)
+        
+        # Add CSS styling for better spacing and readability
+        browser.document().setDefaultStyleSheet("""
+            body { 
+                line-height: 1.6; 
+                font-size: 14px;
+            }
+            h1 { 
+                margin-top: 24px; 
+                margin-bottom: 16px; 
+                font-size: 28px;
+                color: #0d7377;
+            }
+            h2 { 
+                margin-top: 20px; 
+                margin-bottom: 12px; 
+                font-size: 22px;
+                color: #0d7377;
+            }
+            h3 { 
+                margin-top: 16px; 
+                margin-bottom: 10px; 
+                font-size: 18px;
+                color: #0d7377;
+            }
+            p { 
+                margin-top: 8px; 
+                margin-bottom: 12px; 
+            }
+            ul, ol { 
+                margin-top: 8px; 
+                margin-bottom: 16px;
+                margin-left: 20px;
+            }
+            li { 
+                margin-bottom: 6px; 
+            }
+            table { 
+                margin-top: 16px; 
+                margin-bottom: 16px;
+                border-collapse: collapse;
+            }
+            th, td { 
+                padding: 8px 12px;
+                border: 1px solid #ccc;
+            }
+            th {
+                background-color: #0d7377;
+                color: white;
+            }
+            code {
+                background-color: #f5f5f5;
+                padding: 2px 6px;
+                border-radius: 3px;
+            }
+            hr {
+                margin-top: 20px;
+                margin-bottom: 20px;
+                border: none;
+                border-top: 2px solid #e0e0e0;
+            }
+        """)
+        
         layout.addWidget(browser)
         
         # Close button
