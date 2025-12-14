@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ProbablyTasty Recipe</title>
+    <meta name="description" content="{{ description }}">
+    <meta name="generator" content="ProbablyTasty Recipe Manager">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #0d7377;
+            --primary-dark: #0a5c5f;
+            --primary-light: #14a1a8;
+            --accent-color: #32e0c4;
+            --text-color: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-color: #ffffff;
+            --card-bg: #f8f9fa;
+            --border-color: #e0e0e0;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header .description {
+            font-size: 1.2em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .controls {
+            padding: 20px 30px;
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            width: 80px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .metadata {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .metadata-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .metadata-item .icon {
+            font-size: 1.5em;
+        }
+        
+        .metadata-item .value {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+        
+        .metadata-item .label {
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .ingredients-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .ingredient-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: var(--card-bg);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ingredient-item:hover {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .ingredient-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+        
+        .ingredient-item.checked {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        
+        .ingredient-quantity {
+            font-weight: 700;
+            color: var(--primary-color);
+            min-width: 80px;
+        }
+        
+        .ingredient-name {
+            flex: 1;
+        }
+        
+        .ingredient-prep {
+            font-style: italic;
+            color: var(--text-light);
+        }
+        
+        .instructions {
+            line-height: 1.8;
+        }
+        
+        .instruction-step {
+            padding: 15px;
+            margin-bottom: 12px;
+            background: var(--card-bg);
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            position: relative;
+            padding-left: 60px;
+        }
+        
+        .instruction-step .step-number {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 35px;
+            height: 35px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        
+        .tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .source {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .source a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .source a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: var(--card-bg);
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .controls {
+                display: none;
+            }
+            .ingredient-item input[type="checkbox"] {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .control-group {
+                width: 100%;
+            }
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            .metadata {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script type="application/json" id="recipe-data">
+{{ recipe_json }}
+    </script>
+    
+    <div class="container">
+        <header class="header">
+            <h1 id="recipe-title">{{ title }}</h1>
+            <p class="description" id="recipe-description">{{ description }}</p>
+        </header>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="servings-input">Servings:</label>
+                <input type="number" id="servings-input" min="1" value="4">
+                <button onclick="scaleRecipe()">⚖️ Scale Recipe</button>
+            </div>
+            
+            <div class="control-group">
+                <label for="unit-system">Units:</label>
+                <select id="unit-system" onchange="convertUnits()">
+                    <option value="imperial">Imperial (cups, tsp)</option>
+                    <option value="metric">Metric (ml, g)</option>
+                </select>
+            </div>
+            
+            <button onclick="window.print()">🖨️ Print</button>
+            <button onclick="resetRecipe()">🔄 Reset</button>
+        </div>
+        
+        <div class="content">
+            <div class="metadata">
+                <div class="metadata-item">
+                    <span class="icon">👥</span>
+                    <div>
+                        <div class="value" id="current-servings">4</div>
+                        <div class="label">servings</div>
+                    </div>
+                </div>
+                <div class="metadata-item" id="prep-time" style="display: none;">
+                    <span class="icon">⏱️</span>
+                    <div>
+                        <div class="value" id="prep-time-value">0</div>
+                        <div class="label">prep time</div>
+                    </div>
+                </div>
+                <div class="metadata-item" id="cook-time" style="display: none;">
+                    <span class="icon">🍳</span>
+                    <div>
+                        <div class="value" id="cook-time-value">0</div>
+                        <div class="label">cook time</div>
+                    </div>
+                </div>
+                <div class="metadata-item" id="total-time" style="display: none;">
+                    <span class="icon">⏰</span>
+                    <div>
+                        <div class="value" id="total-time-value">0</div>
+                        <div class="label">total time</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📝 Ingredients</h2>
+                <ul class="ingredients-list" id="ingredients-list">
+                    <!-- Populated by JavaScript -->
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>👨‍🍳 Instructions</h2>
+                <div class="instructions" id="instructions">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="tags" id="tags">
+                <!-- Populated by JavaScript -->
+            </div>
+            
+            <div class="source" id="source" style="display: none;">
+                <p><strong>Source:</strong> <a id="source-link" href="#" target="_blank"></a></p>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <p>✨ Created with <strong>ProbablyTasty</strong> Recipe Manager ✨</p>
+            <p style="margin-top: 5px; font-size: 0.85em;">This is a self-contained recipe file - open it in any browser!</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Unit conversion tables
+        const CONVERSIONS = {
+            // Volume conversions (to ml)
+            volume: {
+                'cup': 236.588,
+                'cups': 236.588,
+                'c': 236.588,
+                'tablespoon': 14.787,
+                'tablespoons': 14.787,
+                'tbsp': 14.787,
+                'tbs': 14.787,
+                'teaspoon': 4.929,
+                'teaspoons': 4.929,
+                'tsp': 4.929,
+                'fluid ounce': 29.574,
+                'fluid ounces': 29.574,
+                'fl oz': 29.574,
+                'pint': 473.176,
+                'pints': 473.176,
+                'pt': 473.176,
+                'quart': 946.353,
+                'quarts': 946.353,
+                'qt': 946.353,
+                'gallon': 3785.41,
+                'gallons': 3785.41,
+                'gal': 3785.41,
+                'ml': 1,
+                'milliliter': 1,
+                'milliliters': 1,
+                'liter': 1000,
+                'liters': 1000,
+                'l': 1000,
+            },
+            // Weight conversions (to grams)
+            weight: {
+                'ounce': 28.3495,
+                'ounces': 28.3495,
+                'oz': 28.3495,
+                'pound': 453.592,
+                'pounds': 453.592,
+                'lb': 453.592,
+                'lbs': 453.592,
+                'gram': 1,
+                'grams': 1,
+                'g': 1,
+                'kilogram': 1000,
+                'kilograms': 1000,
+                'kg': 1000,
+            }
+        };
+        
+        // Recipe data
+        let recipeData = null;
+        let originalServings = 4;
+        let currentScale = 1;
+        let currentUnitSystem = 'imperial';
+        
+        // Load recipe data
+        function loadRecipeData() {
+            const dataElement = document.getElementById('recipe-data');
+            recipeData = JSON.parse(dataElement.textContent);
+            originalServings = recipeData.servings || 4;
+            
+            document.getElementById('servings-input').value = originalServings;
+            renderRecipe();
+        }
+        
+        // Render the complete recipe
+        function renderRecipe() {
+            renderMetadata();
+            renderIngredients();
+            renderInstructions();
+            renderTags();
+            renderSource();
+        }
+        
+        // Render metadata
+        function renderMetadata() {
+            const currentServings = Math.round(originalServings * currentScale);
+            document.getElementById('current-servings').textContent = currentServings;
+            
+            if (recipeData.prep_time_minutes) {
+                document.getElementById('prep-time').style.display = 'flex';
+                document.getElementById('prep-time-value').textContent = formatTime(recipeData.prep_time_minutes);
+            }
+            
+            if (recipeData.cook_time_minutes) {
+                document.getElementById('cook-time').style.display = 'flex';
+                document.getElementById('cook-time-value').textContent = formatTime(recipeData.cook_time_minutes);
+            }
+            
+            if (recipeData.total_time_minutes) {
+                document.getElementById('total-time').style.display = 'flex';
+                document.getElementById('total-time-value').textContent = formatTime(recipeData.total_time_minutes);
+            }
+        }
+        
+        // Format time in minutes to readable format
+        function formatTime(minutes) {
+            if (minutes < 60) {
+                return minutes + ' min';
+            }
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+        }
+        
+        // Render ingredients list
+        function renderIngredients() {
+            const list = document.getElementById('ingredients-list');
+            list.innerHTML = '';
+            
+            recipeData.ingredients.forEach((ingredient, index) => {
+                const li = document.createElement('li');
+                li.className = 'ingredient-item';
+                li.id = `ingredient-${index}`;
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.onchange = function() {
+                    li.classList.toggle('checked', this.checked);
+                };
+                
+                const quantity = ingredient.quantity * currentScale;
+                const unit = convertUnit(ingredient.unit, quantity);
+                const displayQuantity = formatQuantity(quantity);
+                
+                const quantitySpan = document.createElement('span');
+                quantitySpan.className = 'ingredient-quantity';
+                quantitySpan.textContent = `${displayQuantity} ${unit}`;
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'ingredient-name';
+                nameSpan.textContent = ingredient.name;
+                
+                li.appendChild(checkbox);
+                li.appendChild(quantitySpan);
+                li.appendChild(nameSpan);
+                
+                if (ingredient.preparation) {
+                    const prepSpan = document.createElement('span');
+                    prepSpan.className = 'ingredient-prep';
+                    prepSpan.textContent = `(${ingredient.preparation})`;
+                    li.appendChild(prepSpan);
+                }
+                
+                list.appendChild(li);
+            });
+        }
+        
+        // Convert units based on current system
+        function convertUnit(unit, quantity) {
+            if (currentUnitSystem === 'imperial') {
+                return unit; // Keep original
+            }
+            
+            const lowerUnit = unit.toLowerCase();
+            
+            // Check if it's a volume unit
+            if (CONVERSIONS.volume[lowerUnit]) {
+                const ml = quantity * CONVERSIONS.volume[lowerUnit];
+                if (ml >= 1000) {
+                    return 'L';
+                }
+                return 'ml';
+            }
+            
+            // Check if it's a weight unit
+            if (CONVERSIONS.weight[lowerUnit]) {
+                const g = quantity * CONVERSIONS.weight[lowerUnit];
+                if (g >= 1000) {
+                    return 'kg';
+                }
+                return 'g';
+            }
+            
+            // Not a convertible unit, return as is
+            return unit;
+        }
+        
+        // Format quantity for display
+        function formatQuantity(quantity) {
+            if (currentUnitSystem === 'metric') {
+                // Convert the quantity based on unit
+                // This is simplified; full implementation would track original units
+                return quantity.toFixed(1).replace(/\.0$/, '');
+            }
+            
+            // For imperial, use fractions
+            if (quantity === 0) return '0';
+            
+            const whole = Math.floor(quantity);
+            const fraction = quantity - whole;
+            
+            const fractions = {
+                0.125: '⅛',
+                0.25: '¼',
+                0.333: '⅓',
+                0.375: '⅜',
+                0.5: '½',
+                0.625: '⅝',
+                0.666: '⅔',
+                0.75: '¾',
+                0.875: '⅞'
+            };
+            
+            // Find closest fraction
+            let closestFraction = '';
+            let closestDiff = 0.06;
+            
+            for (const [value, symbol] of Object.entries(fractions)) {
+                const diff = Math.abs(fraction - parseFloat(value));
+                if (diff < closestDiff) {
+                    closestDiff = diff;
+                    closestFraction = symbol;
+                }
+            }
+            
+            if (whole === 0) {
+                return closestFraction || quantity.toFixed(2);
+            }
+            
+            return closestFraction ? `${whole}${closestFraction}` : quantity.toFixed(2);
+        }
+        
+        // Render instructions
+        function renderInstructions() {
+            const container = document.getElementById('instructions');
+            container.innerHTML = '';
+            
+            const instructions = recipeData.instructions || '';
+            const steps = instructions.split(/\n+/).filter(step => step.trim());
+            
+            steps.forEach((step, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'instruction-step';
+                
+                const stepNumber = document.createElement('div');
+                stepNumber.className = 'step-number';
+                stepNumber.textContent = index + 1;
+                
+                const stepText = step.replace(/^\d+\.\s*/, ''); // Remove leading numbers
+                
+                stepDiv.appendChild(stepNumber);
+                stepDiv.appendChild(document.createTextNode(stepText));
+                container.appendChild(stepDiv);
+            });
+        }
+        
+        // Render tags
+        function renderTags() {
+            const container = document.getElementById('tags');
+            container.innerHTML = '';
+            
+            if (recipeData.tags && recipeData.tags.length > 0) {
+                recipeData.tags.forEach(tag => {
+                    const tagSpan = document.createElement('span');
+                    tagSpan.className = 'tag';
+                    tagSpan.textContent = `#${tag}`;
+                    container.appendChild(tagSpan);
+                });
+            }
+        }
+        
+        // Render source
+        function renderSource() {
+            if (recipeData.source_url) {
+                document.getElementById('source').style.display = 'block';
+                const link = document.getElementById('source-link');
+                link.href = recipeData.source_url;
+                link.textContent = recipeData.source_url;
+            }
+        }
+        
+        // Scale recipe
+        function scaleRecipe() {
+            const newServings = parseInt(document.getElementById('servings-input').value);
+            if (newServings > 0) {
+                currentScale = newServings / originalServings;
+                renderRecipe();
+            }
+        }
+        
+        // Convert units
+        function convertUnits() {
+            currentUnitSystem = document.getElementById('unit-system').value;
+            renderIngredients();
+        }
+        
+        // Reset recipe
+        function resetRecipe() {
+            currentScale = 1;
+            currentUnitSystem = 'imperial';
+            document.getElementById('servings-input').value = originalServings;
+            document.getElementById('unit-system').value = 'imperial';
+            
+            // Uncheck all ingredients
+            document.querySelectorAll('.ingredient-item input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+                cb.parentElement.classList.remove('checked');
+            });
+            
+            renderRecipe();
+        }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', loadRecipeData);
+    </script>
+</body>
+</html>

@@ -13,6 +13,7 @@ block_cipher = None
 # Use os.path.join for cross-platform compatibility
 themes_tree = Tree(os.path.join('src', 'ui', 'themes'), prefix=os.path.join('src', 'ui', 'themes'), excludes=['*.pyc', '__pycache__'])
 icons_tree = Tree('icons', prefix='icons', excludes=['*.pyc', '__pycache__'])
+templates_tree = Tree(os.path.join('src', 'templates'), prefix=os.path.join('src', 'templates'), excludes=['*.pyc', '__pycache__'])
 
 # Collect data files for packages that need them
 mf2py_datas = collect_data_files('mf2py')
@@ -62,6 +63,7 @@ exe = EXE(
     a.datas,
     themes_tree,
     icons_tree,
+    templates_tree,
     [],
     exclude_binaries=True,
     name='ProbablyTasty',
@@ -84,6 +86,7 @@ coll = COLLECT(
     a.datas,
     themes_tree,
     icons_tree,
+    templates_tree,
     strip=False,
     upx=True,
     upx_exclude=[],

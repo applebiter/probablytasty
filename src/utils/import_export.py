@@ -370,11 +370,11 @@ class RecipeExporter:
         if getattr(sys, 'frozen', False):
             # Running as compiled executable
             base_path = Path(sys._MEIPASS)
+            template_path = base_path / "src" / "templates" / "recipe.html"
         else:
-            # Running as script
-            base_path = Path(__file__).parent.parent
-        
-        template_path = base_path / "src" / "templates" / "recipe.html"
+            # Running as script - __file__ is already in src/utils/
+            base_path = Path(__file__).parent.parent  # Go up to project root
+            template_path = base_path / "templates" / "recipe.html"
         with open(template_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
         

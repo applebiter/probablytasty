@@ -68,9 +68,10 @@ logs/
 config.local.json
 settings.local.json
 
-# HTML exports (except example)
+# HTML exports (except example and templates)
 *.html
 !example_recipe.html
+!src/templates/*.html
 
 # Model files (can be large)
 models/
