@@ -10,7 +10,7 @@ An intelligent recipe management application with AI-powered search, self-contai
 - 🌳 **Tree View Navigation** - Browse recipes by categories and tags
 - 📸 **Image Import** - Extract recipes from photos using vision AI
 - 🔗 **URL Import** - Import recipes from websites automatically
-- 📤 **Multiple Export Formats** - JSON, Markdown, and self-contained HTML
+- 📤 **HTML Export Format** - Self-contained HTML
 
 ### AI-Powered Features
 - 🔍 **Natural Language Search** - Find recipes with conversational queries
@@ -27,7 +27,6 @@ An intelligent recipe management application with AI-powered search, self-contai
 ### Self-Contained HTML Exports
 - 🌐 **Universal Format** - Open in any browser, no app needed
 - 📱 **Fully Interactive** - Built-in servings scaler and unit converter
-- 🎨 **Beautiful Design** - Professional gradient styling
 - 📤 **Shareable** - Email or cloud-share as single file
 - 💾 **Re-importable** - Import HTML recipes back into the app
 
@@ -38,7 +37,18 @@ An intelligent recipe management application with AI-powered search, self-contai
 - 💻 **Cross-Platform** - Works on Windows, macOS, and Linux
 - ⚙️ **Easy Configuration** - All settings in-app, no config files needed
 
-## 🚀 Quick Start
+## � System Requirements
+
+### Windows
+- **Microsoft Visual C++ Redistributable** - Required for running the application
+  - Download the latest version: [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
+  - Install both x64 and x86 versions if unsure which you need
+
+### All Platforms
+- Python 3.8 or higher (for running from source)
+- Active internet connection (for AI features and URL import)
+
+## �🚀 Quick Start
 
 1. **Clone the repository**
    ```bash
